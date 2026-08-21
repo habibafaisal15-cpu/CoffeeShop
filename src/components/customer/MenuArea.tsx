@@ -1,7 +1,7 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
@@ -282,7 +282,7 @@ export function MenuArea({
             </section>
           )}
 
-          <CraftFeatureSection onExplore={() => onCategoryChange("pastries")} />
+          <CraftFeatureSection onCategoryChange={onCategoryChange} />
         </>
       ) : (
         catalogSections.map((section) => (
@@ -335,57 +335,117 @@ function menuImageSources(product: Product): string[] {
   return staticImage ? [staticImage] : [];
 }
 
-function CraftFeatureSection({ onExplore }: { onExplore?: () => void }) {
+const CRAFT_SLIDES = [
+  {
+    eyebrow: "BREWED COUNTER",
+    title: "Fresh from the Oven — Signature Bakes & Cakes",
+    description:
+      "Handcrafted daily using organic cocoa, fresh espresso, and premium butter with 24 hours' notice for custom orders.",
+    cta: "Explore Signature Bakes",
+    category: "pastries",
+    image:
+      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80",
+    badge: "SIGNATURE CAKES",
+  },
+  {
+    eyebrow: "BREWED BAR",
+    title: "Slow-Brewed Coffees — Rich & Smooth",
+    description:
+      "Single-origin beans, carefully roasted and brewed to bring out deep aroma, velvety crema, and a perfectly balanced cup.",
+    cta: "Explore Brewed Coffees",
+    category: "coffee",
+    image:
+      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
+    badge: "BREWED COFFEES",
+  },
+  {
+    eyebrow: "MORNING FLUFF",
+    title: "Fluffy Pancakes — Light, Golden & Warm",
+    description:
+      "Stacked high with maple drizzle, seasonal berries, and whipped butter — the cosiest start to your day.",
+    cta: "Explore Pancakes",
+    category: "pastries",
+    image:
+      "https://images.unsplash.com/photo-1528207773046-07fe16dae284?auto=format&fit=crop&w=900&q=80",
+    badge: "FLUFFY PANCAKES",
+  },
+] as const;
+
+function CraftFeatureSection({
+  onCategoryChange,
+}: {
+  onCategoryChange: (cat: string) => void;
+}) {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActive((index) => (index + 1) % CRAFT_SLIDES.length);
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const slide = CRAFT_SLIDES[active];
+
   return (
     <>
       <div className="mx-auto mb-6 max-w-xl px-4 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7A6B5D]">
+        <p className="menu-section-title text-xs font-semibold uppercase tracking-[0.22em] text-[#F2DABA]/90">
           OUR CRAFT
         </p>
-        <p className="mt-3 font-serif text-lg leading-relaxed text-[#2A1E17]">
+        <p className="menu-section-title mt-3 font-serif text-xl italic leading-relaxed tracking-[0.02em] text-[#F2DABA] sm:text-2xl">
           Every cup tells a story of carefully sourced beans and fresh bakes.
         </p>
       </div>
 
-      <div className="mx-6 my-8 flex flex-col items-center justify-between gap-8 rounded-[36px] bg-[#2A1E17] p-8 text-[#FAF7F2] shadow-xl md:flex-row md:p-12">
-        <div className="w-full md:max-w-md">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#C99E92]">
-            BREWED COUNTER
-          </p>
-          <h3 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">
-            Fresh from the Oven — Signature Bakes &amp; Cakes
-          </h3>
-          <p className="mt-3 max-w-md text-sm text-[#D8C7B5]">
-            Handcrafted daily using organic cocoa, fresh espresso, and premium
-            butter with 24 hours&apos; notice for custom orders.
-          </p>
+      <div className="mx-6 my-8 overflow-hidden rounded-[36px] bg-[#2A1E17] p-8 text-[#FAF7F2] shadow-xl md:p-12">
+        <div key={active} className="craft-slide-in flex flex-col items-center justify-between gap-8 md:flex-row">
+          <div className="w-full md:max-w-md">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#C99E92]">
+              {slide.eyebrow}
+            </p>
+            <h3 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">
+              {slide.title}
+            </h3>
+            <p className="mt-3 max-w-md text-sm text-[#D8C7B5]">{slide.description}</p>
 
-          <div className="my-6 flex gap-2">
-            <span className="h-2 w-6 rounded-full bg-[#A1B099]" aria-hidden />
-            <span className="h-2 w-2 rounded-full bg-[#FAF7F2]/25" aria-hidden />
-            <span className="h-2 w-2 rounded-full bg-[#FAF7F2]/25" aria-hidden />
+            <div className="my-6 flex gap-2">
+              {CRAFT_SLIDES.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`Show slide ${index + 1}`}
+                  onClick={() => setActive(index)}
+                  className={`h-2 rounded-full transition-all ${
+                    index === active
+                      ? "w-6 bg-[#A1B099]"
+                      : "w-2 bg-[#FAF7F2]/25 hover:bg-[#FAF7F2]/45"
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onCategoryChange(slide.category)}
+              className="rounded-full bg-[#A1B099] px-6 py-3 text-sm font-semibold text-[#2A1E17] transition-all hover:bg-[#8CA086]"
+            >
+              {slide.cta}
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={onExplore}
-            className="rounded-full bg-[#A1B099] px-6 py-3 text-sm font-semibold text-[#2A1E17] transition-all hover:bg-[#8CA086]"
-          >
-            Explore Signature Bakes
-          </button>
-        </div>
-
-        <div className="relative h-72 w-full overflow-hidden rounded-[28px] shadow-md md:h-80 md:w-1/2">
-          <img
-            src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80"
-            alt="Signature cakes and bakes"
-            className="h-full w-full object-cover"
-            loading="lazy"
-            decoding="async"
-          />
-          <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-md">
-            SIGNATURE CAKES
-          </span>
+          <div className="relative h-72 w-full overflow-hidden rounded-[28px] shadow-md md:h-80 md:w-1/2">
+            <img
+              src={resolveCustomerMediaUrl(slide.image)}
+              alt={slide.badge}
+              className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-md">
+              {slide.badge}
+            </span>
+          </div>
         </div>
       </div>
     </>
