@@ -24,45 +24,72 @@ const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
   merchandise: "merchandise",
 };
 
-export function CustomerKiosk() {
-  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
-  const [categories, setCategories] =
-    useState<MenuCategory[]>(DEFAULT_CATEGORIES);
+interface CustomerKioskProps {
+  initialProducts?: Product[];
+  initialCategories?: MenuCategory[];
+}
+
+async function fetchKioskData(): Promise<{
+  products: Product[];
+  categories: MenuCategory[];
+}> {
+  const [productsRes, categoriesRes] = await Promise.all([
+    fetch("/api/products", { cache: "no-store" }),
+    fetch("/api/categories", { cache: "no-store" }),
+  ]);
+
+  const [productsData, categoriesData] = await Promise.all([
+    productsRes.ok ? productsRes.json() : [],
+    categoriesRes.ok ? categoriesRes.json() : [],
+  ]);
+
+  return {
+    products: Array.isArray(productsData) ? productsData : [],
+    categories: Array.isArray(categoriesData) ? categoriesData : [],
+  };
+}
+
+export function CustomerKiosk({
+  initialProducts,
+  initialCategories,
+}: CustomerKioskProps) {
+  const [products, setProducts] = useState<Product[]>(
+    initialProducts?.length ? initialProducts : DEFAULT_PRODUCTS
+  );
+  const [categories, setCategories] = useState<MenuCategory[]>(
+    initialCategories?.length ? initialCategories : DEFAULT_CATEGORIES
+  );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
 
-    const controller = new AbortController();
-    const fetchTimeout = window.setTimeout(() => controller.abort(), 5000);
+    if (initialProducts?.length && initialCategories?.length) {
+      return;
+    }
 
-    Promise.all([
-      fetch("/api/products", { signal: controller.signal, cache: "no-store" }),
-      fetch("/api/categories", { signal: controller.signal, cache: "no-store" }),
-    ])
-      .then(async ([productsRes, categoriesRes]) => {
-        const [productsData, categoriesData] = await Promise.all([
-          productsRes.ok ? productsRes.json() : [],
-          categoriesRes.ok ? categoriesRes.json() : [],
-        ]);
-        if (Array.isArray(productsData) && productsData.length > 0) {
-          setProducts(productsData);
+    let cancelled = false;
+
+    const load = async (attempt = 0) => {
+      try {
+        const data = await fetchKioskData();
+        if (cancelled) return;
+        if (data.products.length > 0) setProducts(data.products);
+        if (data.categories.length > 0) setCategories(data.categories);
+      } catch {
+        if (!cancelled && attempt < 2) {
+          window.setTimeout(() => void load(attempt + 1), 1500 * (attempt + 1));
         }
-        if (Array.isArray(categoriesData) && categoriesData.length > 0) {
-          setCategories(categoriesData);
-        }
-      })
-      .catch(() => {
-        /* keep defaults */
-      })
-      .finally(() => window.clearTimeout(fetchTimeout));
+      }
+    };
+
+    void load();
 
     return () => {
-      controller.abort();
-      window.clearTimeout(fetchTimeout);
+      cancelled = true;
     };
-  }, []);
+  }, [initialCategories, initialProducts]);
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);
