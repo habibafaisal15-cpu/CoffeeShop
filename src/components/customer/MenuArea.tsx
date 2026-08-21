@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { PRODUCT_IMAGES } from "@/lib/data";
-import { resolveMediaUrl } from "@/lib/media-url";
+import { resolveMediaUrl, isCustomUploadUrl } from "@/lib/media-url";
 import { formatPKR, useCartStore } from "@/lib/store";
 import { SafeImage } from "@/components/customer/SafeImage";
 import {
@@ -364,6 +364,10 @@ function menuImageSources(product: Product): string[] {
     sources.push(resolveMediaUrl(product.image.trim()));
   }
 
+  if (sources.length > 0 && isCustomUploadUrl(product.image)) {
+    return sources;
+  }
+
   const fallbacks = MENU_IMAGE_FALLBACKS[product.id] ?? [];
   for (const url of fallbacks) {
     if (!sources.includes(url)) sources.push(url);
@@ -467,6 +471,7 @@ function ProductCard({
                 alt={product.name}
                 loading="lazy"
                 decoding="async"
+                referrerPolicy="no-referrer"
                 className="h-full w-full object-cover"
                 onError={() => setSourceIndex((i) => i + 1)}
               />

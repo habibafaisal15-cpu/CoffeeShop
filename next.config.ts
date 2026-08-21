@@ -24,6 +24,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "img.icons8.com" },
       { protocol: "https", hostname: "bgupvqeccxztvkfuvefl.supabase.co" },
+      { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "*.vercel.app" },
       ...(adminHost
         ? [{ protocol: "https" as const, hostname: adminHost }]
         : []),

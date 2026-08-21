@@ -38,8 +38,8 @@ export function CustomerKiosk() {
     const fetchTimeout = window.setTimeout(() => controller.abort(), 5000);
 
     Promise.all([
-      fetch("/api/products", { signal: controller.signal }),
-      fetch("/api/categories", { signal: controller.signal }),
+      fetch("/api/products", { signal: controller.signal, cache: "no-store" }),
+      fetch("/api/categories", { signal: controller.signal, cache: "no-store" }),
     ])
       .then(async ([productsRes, categoriesRes]) => {
         const [productsData, categoriesData] = await Promise.all([

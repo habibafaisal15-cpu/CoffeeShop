@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { resolveMediaUrl } from "@/lib/media-url";
 
@@ -32,23 +31,30 @@ export function SafeImage({
 
   if (fill) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={resolved}
         alt={alt}
-        fill
-        className={className}
+        className={`absolute inset-0 h-full w-full ${className ?? "object-cover"}`}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
       />
     );
   }
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={resolved}
       alt={alt}
       width={width ?? 40}
       height={height ?? 40}
       className={className}
+      loading="lazy"
+      decoding="async"
+      referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
     />
   );

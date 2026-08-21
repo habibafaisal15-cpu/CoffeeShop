@@ -1,7 +1,5 @@
 /**
  * Turn stored image paths into absolute URLs both deployments can load.
- * - Supabase / external https URLs pass through unchanged
- * - Relative /uploads or /api/uploads paths resolve via admin base URL
  */
 export function getMediaBaseUrl(): string {
   const fromEnv =
@@ -42,4 +40,14 @@ export function isSupabaseMediaUrl(src: string | undefined | null): boolean {
   const value = src?.trim() ?? "";
   if (!value) return false;
   return /supabase\.co\/storage\//i.test(value);
+}
+
+export function isCustomUploadUrl(src: string | undefined | null): boolean {
+  const value = resolveMediaUrl(src);
+  if (!value) return false;
+  return (
+    isSupabaseMediaUrl(value) ||
+    /\/api\/uploads\//i.test(value) ||
+    /\/uploads\//i.test(value)
+  );
 }

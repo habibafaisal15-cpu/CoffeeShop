@@ -36,6 +36,18 @@ export async function ensureUploadBucket() {
   return !error;
 }
 
+/** Public URL for a file already in the product-images bucket. */
+export function getSupabasePublicUrl(filename: string): string | null {
+  const supabase = getSupabaseAdmin();
+  if (!supabase) return null;
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(filename);
+
+  return publicUrl;
+}
+
 export async function uploadToSupabase(
   filename: string,
   buffer: Buffer,
@@ -57,11 +69,7 @@ export async function uploadToSupabase(
     throw new Error(error.message);
   }
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(filename);
-
-  return publicUrl;
+  return getSupabasePublicUrl(filename);
 }
 
 export { UPLOAD_BUCKET };
