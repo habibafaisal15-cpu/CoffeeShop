@@ -1,9 +1,9 @@
 import { CustomerDbError } from "@/components/customer/CustomerDbError";
 import { CustomerKiosk } from "@/components/customer/CustomerKiosk";
-import { getCategories, getProducts } from "@/lib/db";
+import { getCategories, getCraftSlides, getProducts } from "@/lib/db";
 import { isDatabaseConfigured } from "@/lib/db/client";
 import { isCustomerSite } from "@/lib/site-mode";
-import { MenuCategory, Product } from "@/lib/types";
+import { CraftSlide, MenuCategory, Product } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +13,14 @@ export default async function HomePage() {
   }
   let products: Product[] | undefined;
   let categories: MenuCategory[] | undefined;
+  let craftSlides: CraftSlide[] | undefined;
 
   try {
-    [products, categories] = await Promise.all([getProducts(), getCategories()]);
+    [products, categories, craftSlides] = await Promise.all([
+      getProducts(),
+      getCategories(),
+      getCraftSlides(),
+    ]);
   } catch (error) {
     console.error("Failed to load kiosk data:", error);
   }
@@ -24,6 +29,7 @@ export default async function HomePage() {
     <CustomerKiosk
       initialProducts={products}
       initialCategories={categories}
+      initialCraftSlides={craftSlides}
     />
   );
 }

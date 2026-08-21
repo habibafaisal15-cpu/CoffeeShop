@@ -5,6 +5,7 @@ import { getSiteMode } from "@/lib/site-mode";
 const PROTECTED_API = [
   "/api/products/manage",
   "/api/categories/manage",
+  "/api/craft-slides/manage",
   "/api/upload",
 ];
 
@@ -64,6 +65,7 @@ export const config = {
     "/admin/:path*",
     "/api/products/manage",
     "/api/categories/manage",
+    "/api/craft-slides/manage",
     "/api/upload",
     "/api/orders/:path*",
   ],

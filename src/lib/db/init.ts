@@ -1,4 +1,5 @@
 import { DEFAULT_CATEGORIES } from "../categories";
+import { DEFAULT_CRAFT_SLIDES } from "../craft-slides";
 import { DEFAULT_PRODUCTS } from "../data";
 import { getSql } from "./client";
 import { createProductsTable, getProductsTable } from "./tables";
@@ -35,6 +36,20 @@ async function runSchema() {
       points_earned INTEGER NOT NULL DEFAULT 0,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS craft_slides (
+      id TEXT PRIMARY KEY,
+      eyebrow TEXT NOT NULL DEFAULT '',
+      title TEXT NOT NULL DEFAULT '',
+      description TEXT NOT NULL DEFAULT '',
+      cta TEXT NOT NULL DEFAULT '',
+      category TEXT NOT NULL DEFAULT 'pastries',
+      image TEXT NOT NULL DEFAULT '',
+      badge TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0
     )
   `;
 }
@@ -88,6 +103,25 @@ async function seedDefaults() {
         ON CONFLICT (id) DO NOTHING
       `;
     }
+  }
+
+  for (const slide of DEFAULT_CRAFT_SLIDES) {
+    await sql`
+      INSERT INTO craft_slides (
+        id, eyebrow, title, description, cta, category, image, badge, sort_order
+      ) VALUES (
+        ${slide.id},
+        ${slide.eyebrow},
+        ${slide.title},
+        ${slide.description},
+        ${slide.cta},
+        ${slide.category},
+        ${slide.image},
+        ${slide.badge},
+        ${slide.sortOrder}
+      )
+      ON CONFLICT (id) DO NOTHING
+    `;
   }
 }
 

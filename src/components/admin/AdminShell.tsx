@@ -11,6 +11,7 @@ import {
   Coffee,
   LogOut,
   ExternalLink,
+  Images,
 } from "lucide-react";
 
 const CUSTOMER_URL = process.env.NEXT_PUBLIC_CUSTOMER_URL?.trim() || "";
@@ -20,6 +21,7 @@ const NAV = [
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
+  { href: "/admin/home-slides", label: "Home Slides", icon: Images },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

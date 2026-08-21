@@ -3,8 +3,9 @@
 import type { ComponentType } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MenuCategory, Product } from "@/lib/types";
+import { MenuCategory, Product, CraftSlide } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
+import { DEFAULT_CRAFT_SLIDES } from "@/lib/craft-slides";
 import { PRODUCT_IMAGES } from "@/lib/data";
 import { resolveCustomerMediaUrl } from "@/lib/media-url";
 import { CategoryImage } from "@/components/customer/CategoryImage";
@@ -54,6 +55,7 @@ const CATEGORY_PILL_BG: Record<string, string> = {
 interface MenuAreaProps {
   products: Product[];
   categories: MenuCategory[];
+  craftSlides?: CraftSlide[];
   activeCategory: string;
   onCategoryChange: (cat: string) => void;
 }
@@ -61,6 +63,7 @@ interface MenuAreaProps {
 export function MenuArea({
   products,
   categories,
+  craftSlides = DEFAULT_CRAFT_SLIDES,
   activeCategory,
   onCategoryChange,
 }: MenuAreaProps) {
@@ -209,13 +212,13 @@ export function MenuArea({
                     key={cat.id}
                     type="button"
                     onClick={() => onCategoryChange(cat.id)}
-                    className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-[24px] px-1.5 py-2 shadow-sm transition ${
+                    className={`category-pill flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-[24px] px-1.5 py-2 shadow-sm ${
                       isActive
                         ? "bg-[#C99E92] text-white"
                         : CATEGORY_PILL_BG[cat.id] ?? "bg-[#F5EDE3] text-[#2A1E17]"
                     }`}
                   >
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
+                    <div className="category-pill-icon relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
                       {cat.image ? (
                         <CategoryImage
                           src={resolveCustomerMediaUrl(cat.image)}
@@ -282,7 +285,10 @@ export function MenuArea({
             </section>
           )}
 
-          <CraftFeatureSection onCategoryChange={onCategoryChange} />
+          <CraftFeatureSection
+            slides={craftSlides}
+            onCategoryChange={onCategoryChange}
+          />
         </>
       ) : (
         catalogSections.map((section) => (
@@ -335,57 +341,26 @@ function menuImageSources(product: Product): string[] {
   return staticImage ? [staticImage] : [];
 }
 
-const CRAFT_SLIDES = [
-  {
-    eyebrow: "BREWED COUNTER",
-    title: "Fresh from the Oven — Signature Bakes & Cakes",
-    description:
-      "Handcrafted daily using organic cocoa, fresh espresso, and premium butter with 24 hours' notice for custom orders.",
-    cta: "Explore Signature Bakes",
-    category: "pastries",
-    image:
-      "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80",
-    badge: "SIGNATURE CAKES",
-  },
-  {
-    eyebrow: "BREWED BAR",
-    title: "Slow-Brewed Coffees — Rich & Smooth",
-    description:
-      "Single-origin beans, carefully roasted and brewed to bring out deep aroma, velvety crema, and a perfectly balanced cup.",
-    cta: "Explore Brewed Coffees",
-    category: "coffee",
-    image:
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
-    badge: "BREWED COFFEES",
-  },
-  {
-    eyebrow: "MORNING FLUFF",
-    title: "Fluffy Pancakes — Light, Golden & Warm",
-    description:
-      "Stacked high with maple drizzle, seasonal berries, and whipped butter — the cosiest start to your day.",
-    cta: "Explore Pancakes",
-    category: "pastries",
-    image:
-      "https://images.unsplash.com/photo-1528207773046-07fe16dae284?auto=format&fit=crop&w=900&q=80",
-    badge: "FLUFFY PANCAKES",
-  },
-] as const;
-
 function CraftFeatureSection({
+  slides,
   onCategoryChange,
 }: {
+  slides: CraftSlide[];
   onCategoryChange: (cat: string) => void;
 }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
+    if (slides.length <= 1) return;
     const timer = window.setInterval(() => {
-      setActive((index) => (index + 1) % CRAFT_SLIDES.length);
+      setActive((index) => (index + 1) % slides.length);
     }, 5000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
-  const slide = CRAFT_SLIDES[active];
+  if (slides.length === 0) return null;
+
+  const slide = slides[active];
 
   return (
     <>
@@ -410,9 +385,9 @@ function CraftFeatureSection({
             <p className="mt-3 max-w-md text-sm text-[#D8C7B5]">{slide.description}</p>
 
             <div className="my-6 flex gap-2">
-              {CRAFT_SLIDES.map((_, index) => (
+              {slides.map((item, index) => (
                 <button
-                  key={index}
+                  key={item.id}
                   type="button"
                   aria-label={`Show slide ${index + 1}`}
                   onClick={() => setActive(index)}

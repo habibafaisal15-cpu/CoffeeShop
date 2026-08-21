@@ -41,6 +41,18 @@ export interface MenuCategory {
   showInNav: boolean;
 }
 
+export interface CraftSlide {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  cta: string;
+  category: string;
+  image: string;
+  badge: string;
+  sortOrder: number;
+}
+
 export interface Product {
   id: string;
   name: string;

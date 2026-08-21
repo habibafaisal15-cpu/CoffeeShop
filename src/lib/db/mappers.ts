@@ -1,5 +1,5 @@
 import { DEFAULT_CATEGORIES } from "../categories";
-import { MenuCategory, Order, OrderItem, Product } from "../types";
+import { MenuCategory, Order, OrderItem, Product, CraftSlide } from "../types";
 import { resolveMediaUrl } from "../media-url";
 
 const DEFAULT_CATEGORY_IMAGES = Object.fromEntries(
@@ -51,6 +51,32 @@ export type OrderRow = {
   created_at: Date | string;
   updated_at: Date | string;
 };
+
+export type CraftSlideRow = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  cta: string;
+  category: string;
+  image: string;
+  badge: string;
+  sort_order: number;
+};
+
+export function mapCraftSlide(row: CraftSlideRow): CraftSlide {
+  return {
+    id: row.id,
+    eyebrow: row.eyebrow,
+    title: row.title,
+    description: row.description,
+    cta: row.cta,
+    category: row.category,
+    image: sanitizeStoredImage(row.image),
+    badge: row.badge,
+    sortOrder: row.sort_order,
+  };
+}
 
 export function mapCategory(row: CategoryRow): MenuCategory {
   return {

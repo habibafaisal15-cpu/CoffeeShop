@@ -4,13 +4,15 @@ import { ensureDb } from "./db/init";
 import { getProductsTable } from "./db/tables";
 import {
   mapCategory,
+  mapCraftSlide,
   mapOrder,
   mapProduct,
   type CategoryRow,
+  type CraftSlideRow,
   type OrderRow,
   type ProductRow,
 } from "./db/mappers";
-import { MenuCategory, Order, Product } from "./types";
+import { CraftSlide, MenuCategory, Order, Product } from "./types";
 import { trimMediaUrl } from "./media-url";
 
 export { ensureDb };
@@ -150,6 +152,36 @@ export async function deleteCategory(id: string): Promise<boolean> {
   const sql = getSql();
   const rows = await sql`DELETE FROM categories WHERE id = ${id} RETURNING id`;
   return rows.length > 0;
+}
+
+export async function getCraftSlides(): Promise<CraftSlide[]> {
+  await ensureDb();
+  const rows = await getSql()<CraftSlideRow[]>`
+    SELECT * FROM craft_slides ORDER BY sort_order ASC, id ASC
+  `;
+  return rows.map(mapCraftSlide);
+}
+
+export async function updateCraftSlide(
+  slide: CraftSlide
+): Promise<CraftSlide | null> {
+  await ensureDb();
+  const sql = getSql();
+  const rows = await sql<CraftSlideRow[]>`
+    UPDATE craft_slides SET
+      eyebrow = ${slide.eyebrow},
+      title = ${slide.title},
+      description = ${slide.description},
+      cta = ${slide.cta},
+      category = ${slide.category},
+      image = ${trimMediaUrl(slide.image)},
+      badge = ${slide.badge},
+      sort_order = ${slide.sortOrder}
+    WHERE id = ${slide.id}
+    RETURNING *
+  `;
+  const row = rows[0] as CraftSlideRow | undefined;
+  return row ? mapCraftSlide(row) : null;
 }
 
 export async function getOrders(): Promise<Order[]> {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Category, NavCategory, Product, MenuCategory } from "@/lib/types";
+import { Category, NavCategory, Product, MenuCategory, CraftSlide } from "@/lib/types";
+import { DEFAULT_CRAFT_SLIDES } from "@/lib/craft-slides";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
 import { OrderPanel } from "@/components/customer/OrderPanel";
@@ -25,36 +26,45 @@ const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
 interface CustomerKioskProps {
   initialProducts?: Product[];
   initialCategories?: MenuCategory[];
+  initialCraftSlides?: CraftSlide[];
 }
 
 async function fetchKioskData(): Promise<{
   products: Product[];
   categories: MenuCategory[];
+  craftSlides: CraftSlide[];
   ok: boolean;
 }> {
   const bust = Date.now();
-  const [productsRes, categoriesRes] = await Promise.all([
+  const [productsRes, categoriesRes, slidesRes] = await Promise.all([
     fetch(`/api/products?_=${bust}`, { cache: "no-store" }),
     fetch(`/api/categories?_=${bust}`, { cache: "no-store" }),
+    fetch(`/api/craft-slides?_=${bust}`, { cache: "no-store" }),
   ]);
 
   const productsData = productsRes.ok ? await productsRes.json() : null;
   const categoriesData = categoriesRes.ok ? await categoriesRes.json() : null;
+  const slidesData = slidesRes.ok ? await slidesRes.json() : null;
 
   return {
     products: Array.isArray(productsData) ? productsData : [],
     categories: Array.isArray(categoriesData) ? categoriesData : [],
-    ok: productsRes.ok && categoriesRes.ok,
+    craftSlides: Array.isArray(slidesData) ? slidesData : [],
+    ok: productsRes.ok && categoriesRes.ok && slidesRes.ok,
   };
 }
 
 export function CustomerKiosk({
   initialProducts,
   initialCategories,
+  initialCraftSlides,
 }: CustomerKioskProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
   const [categories, setCategories] = useState<MenuCategory[]>(
     initialCategories ?? []
+  );
+  const [craftSlides, setCraftSlides] = useState<CraftSlide[]>(
+    initialCraftSlides?.length ? initialCraftSlides : DEFAULT_CRAFT_SLIDES
   );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -77,6 +87,9 @@ export function CustomerKiosk({
         });
         if (data.products.length > 0 || data.categories.length > 0) {
           setRefreshKey((k) => k + 1);
+        }
+        if (data.craftSlides.length > 0) {
+          setCraftSlides(data.craftSlides);
         }
         return nextProducts;
       });
@@ -169,6 +182,7 @@ export function CustomerKiosk({
           key={refreshKey}
           products={products}
           categories={categories}
+          craftSlides={craftSlides}
           activeCategory={activeCategory}
           onCategoryChange={setActiveCategory}
         />
