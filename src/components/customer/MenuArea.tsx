@@ -7,8 +7,8 @@ import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { PRODUCT_IMAGES } from "@/lib/data";
 import { resolveCustomerMediaUrl, isCustomUploadUrl } from "@/lib/media-url";
+import { CategoryImage } from "@/components/customer/CategoryImage";
 import { formatPKR, useCartStore } from "@/lib/store";
-import { SafeImage } from "@/components/customer/SafeImage";
 import {
   IconCoffeeCup,
   IconFilter,
@@ -222,21 +222,20 @@ export function MenuArea({
                         : CATEGORY_PILL_BG[cat.id] ?? "bg-[#F5EDE3] text-[#2A1E17]"
                     }`}
                   >
-                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
-                      <SafeImage
-                        src={cat.image}
-                        alt={cat.label}
-                        fill
-                        className="object-cover"
-                        fallback={
-                          <div className="flex h-full w-full items-center justify-center">
-                            <FallbackIcon
-                              size={18}
-                              className={isActive ? "text-white" : "text-[#6E5D4F]"}
-                            />
-                          </div>
-                        }
-                      />
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
+                      {cat.image ? (
+                        <CategoryImage
+                          src={resolveCustomerMediaUrl(cat.image)}
+                          alt={cat.label}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <FallbackIcon
+                            size={20}
+                            className={isActive ? "text-white" : "text-[#6E5D4F]"}
+                          />
+                        </div>
+                      )}
                     </div>
                     <span className="text-[10px] font-medium leading-tight">
                       {cat.label}
