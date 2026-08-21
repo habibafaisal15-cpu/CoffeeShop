@@ -1,5 +1,9 @@
 import postgres from "postgres";
 
+export function isDatabaseConfigured(): boolean {
+  return Boolean(process.env.DATABASE_URL?.trim());
+}
+
 function getDatabaseUrl() {
   const url = process.env.DATABASE_URL?.trim();
   if (!url) {

@@ -25,14 +25,6 @@ import {
 
 const BAKE_CARD_COLORS = ["#8EB67D", "#E8C4BC", "#D5F1D1"] as const;
 
-const POPULAR_PICK_IDS = [
-  "cappuccino",
-  "caramel-latte",
-  "iced-latte",
-  "mocha",
-  "croissant",
-] as const;
-
 const CATEGORY_FALLBACK: Record<
   string,
   ComponentType<{ size?: number; className?: string }>
@@ -97,14 +89,15 @@ export function MenuArea({
     return p.category === activeCategory;
   });
 
-  const popularPicks = POPULAR_PICK_IDS.map((id) =>
-    filtered.find((p) => p.id === id)
-  ).filter((p): p is Product => Boolean(p));
+  const popularPicks =
+    activeCategory === "all"
+      ? products.filter((p) => p.available !== false && p.popular)
+      : filtered.filter((p) => p.popular);
 
   const isHomeView = activeCategory === "all" && !searchQuery;
-  const homePopularItems = (popularPicks.length ? popularPicks : filtered.slice(0, 3)).slice(
+  const homePopularItems = (popularPicks.length ? popularPicks : filtered.slice(0, 6)).slice(
     0,
-    3
+    6
   );
 
   const sweetTreats = filtered.filter(

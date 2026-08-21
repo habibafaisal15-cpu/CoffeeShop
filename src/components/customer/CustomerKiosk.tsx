@@ -10,6 +10,10 @@ import { SceneBackground } from "@/components/customer/SceneBackground";
 import { HeroCoffeeDecor } from "@/components/customer/HeroCoffeeDecor";
 import { useCartStore } from "@/lib/store";
 import { IconBell } from "@/components/icons/BrewedIcons";
+import { getLinkedCustomerUrl } from "@/lib/site-mode";
+
+const PRODUCTION_CUSTOMER_URL =
+  getLinkedCustomerUrl() || "https://coffee-pos-coral.vercel.app";
 
 const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
   home: "all",
@@ -57,6 +61,7 @@ export function CustomerKiosk({
   );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
@@ -71,6 +76,8 @@ export function CustomerKiosk({
         if (data.categories.length > 0) setCategories(data.categories);
       } catch {
         /* keep last loaded data */
+      } finally {
+        if (!cancelled) setDataLoaded(true);
       }
     };
 
@@ -91,8 +98,19 @@ export function CustomerKiosk({
     if (cat) setActiveCategory(cat);
   };
 
+  const showDbWarning =
+    dataLoaded && products.length === 0 && categories.length === 0;
+
   return (
     <div className="relative min-h-screen">
+      {showDbWarning && (
+        <div className="relative z-50 border-b border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm text-amber-950">
+          Menu data could not load. Use the live site:{" "}
+          <a href={PRODUCTION_CUSTOMER_URL} className="font-semibold underline">
+            {PRODUCTION_CUSTOMER_URL.replace(/^https?:\/\//, "")}
+          </a>
+        </div>
+      )}
       <SceneBackground />
 
       <div className="relative z-30 flex items-center justify-between px-4 py-3 xl:hidden">

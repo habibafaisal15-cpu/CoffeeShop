@@ -127,6 +127,12 @@ export function ImageUpload({ value, onChange, label = "Image" }: ImageUploadPro
       )}
 
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {value.includes("/api/uploads/") && (
+        <p className="mt-2 text-xs text-amber-700">
+          This image was saved to temporary storage and no longer exists. Upload
+          again to fix it on the customer site.
+        </p>
+      )}
     </div>
   );
 }
