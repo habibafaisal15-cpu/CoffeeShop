@@ -1,18 +1,23 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Coffee, Lock, User } from "lucide-react";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/admin";
-
+  const [from, setFrom] = useState("/admin");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const redirect = new URLSearchParams(window.location.search).get("from");
+    if (redirect?.startsWith("/admin")) {
+      setFrom(redirect);
+    }
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -24,6 +29,7 @@ export default function AdminLoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
+        credentials: "include",
       });
 
       if (!res.ok) {
@@ -32,10 +38,10 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.replace(from.startsWith("/admin") ? from : "/admin");
+      router.replace(from);
       router.refresh();
     } catch {
-      setError("Could not reach server. Try npm run dev:clean");
+      setError("Could not reach server. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -105,11 +111,6 @@ export default function AdminLoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
-
-        <p className="mt-5 text-center text-xs text-coffee-muted">
-          Default dev login: <code className="rounded bg-cream px-1">admin</code>{" "}
-          / <code className="rounded bg-cream px-1">brewed123</code>
-        </p>
       </div>
     </div>
   );

@@ -17,19 +17,24 @@ import { formatPKR } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatCard } from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { adminGet } from "@/lib/admin-fetch";
 
 export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const loadOrders = useCallback(() => {
-    fetch("/api/orders")
-      .then((r) => r.json())
+    setLoading(true);
+    adminGet<Order[]>("/api/orders")
       .then((data) => {
         setOrders(Array.isArray(data) ? data : []);
-        setLoading(false);
+        setLoadError("");
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        setLoadError(e instanceof Error ? e.message : "Could not load orders");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -71,6 +76,12 @@ export default function AdminDashboard() {
           </button>
         }
       />
+
+      {loadError && (
+        <div className="admin-card mb-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {loadError}
+        </div>
+      )}
 
       {pending.length > 0 && (
         <div className="admin-card mb-6 flex items-start gap-3 border-amber-200 bg-amber-50/80 p-4">

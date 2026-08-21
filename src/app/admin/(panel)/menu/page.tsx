@@ -8,6 +8,8 @@ import { formatPKR } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { AdminField, AdminCard } from "@/components/admin/AdminField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { adminGet } from "@/lib/admin-fetch";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 const emptyProduct: Omit<Product, "id"> = {
   name: "",
@@ -28,15 +30,25 @@ export default function AdminMenuPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const loadData = () => {
+    setLoading(true);
+    setLoadError("");
+
     Promise.all([
-      fetch("/api/products").then((r) => r.json()),
-      fetch("/api/categories").then((r) => r.json()),
-    ]).then(([prods, cats]) => {
-      setProducts(Array.isArray(prods) ? prods : []);
-      setCategories(Array.isArray(cats) ? cats : []);
-    });
+      adminGet<Product[]>("/api/products"),
+      adminGet<MenuCategory[]>("/api/categories"),
+    ])
+      .then(([prods, cats]) => {
+        setProducts(Array.isArray(prods) ? prods : []);
+        setCategories(Array.isArray(cats) ? cats : []);
+      })
+      .catch((e) => {
+        setLoadError(e instanceof Error ? e.message : "Could not load menu data");
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -141,6 +153,25 @@ export default function AdminMenuPage() {
           </button>
         }
       />
+
+      {loadError && (
+        <div className="admin-card mb-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <p>{loadError}</p>
+          <button
+            type="button"
+            onClick={loadData}
+            className="admin-btn-secondary mt-3"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {loading ? (
+        <AdminCard className="p-8 text-center text-sm text-coffee-muted">
+          Loading menu…
+        </AdminCard>
+      ) : null}
 
       {(isNew || editing) && (
         <AdminCard className="mb-6 p-6">
@@ -299,7 +330,7 @@ export default function AdminMenuPage() {
                           {product.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={product.image}
+                              src={resolveMediaUrl(product.image)}
                               alt={product.name}
                               className="h-full w-full object-cover"
                             />

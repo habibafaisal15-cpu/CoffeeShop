@@ -8,6 +8,7 @@ import { ORDER_STATUS_LABELS } from "@/lib/types";
 import { formatPKR } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { adminGet } from "@/lib/admin-fetch";
 
 const STATUS_FLOW: OrderStatus[] = [
   "pending",
@@ -21,16 +22,19 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<"all" | OrderStatus>("all");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const loadOrders = () => {
     setLoading(true);
-    fetch("/api/orders")
-      .then((r) => r.json())
+    adminGet<Order[]>("/api/orders")
       .then((data) => {
         setOrders(Array.isArray(data) ? data : []);
-        setLoading(false);
+        setLoadError("");
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        setLoadError(e instanceof Error ? e.message : "Could not load orders");
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -75,6 +79,12 @@ export default function AdminOrdersPage() {
           </button>
         }
       />
+
+      {loadError && (
+        <div className="admin-card mb-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {loadError}
+        </div>
+      )}
 
       {pendingCount > 0 && (
         <div className="admin-card mb-6 border-amber-200 bg-amber-50/90 p-4">

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { Plus, Pencil, Trash2, X, Check, GripVertical } from "lucide-react";
 import { MenuCategory } from "@/lib/types";
 import { slugifyCategory } from "@/lib/categories";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { AdminField, AdminCard } from "@/components/admin/AdminField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { adminGet } from "@/lib/admin-fetch";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 const emptyCategory: Omit<MenuCategory, "id"> & { id?: string } = {
   label: "",
@@ -25,11 +26,21 @@ export default function AdminCategoriesPage() {
   const [form, setForm] = useState(emptyCategory);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const loadCategories = () => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((data) => setCategories(Array.isArray(data) ? data : []));
+    setLoading(true);
+    setLoadError("");
+
+    adminGet<MenuCategory[]>("/api/categories")
+      .then((data) => setCategories(Array.isArray(data) ? data : []))
+      .catch((e) => {
+        setLoadError(
+          e instanceof Error ? e.message : "Could not load categories"
+        );
+      })
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -115,6 +126,19 @@ export default function AdminCategoriesPage() {
           </button>
         }
       />
+
+      {loadError && (
+        <div className="admin-card mb-6 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <p>{loadError}</p>
+          <button
+            type="button"
+            onClick={loadCategories}
+            className="admin-btn-secondary mt-3"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {(isNew || editing) && (
         <AdminCard className="mb-6 p-6">
@@ -202,19 +226,25 @@ export default function AdminCategoriesPage() {
         </AdminCard>
       )}
 
+      {loading ? (
+        <AdminCard className="p-8 text-center text-sm text-coffee-muted">
+          Loading categories…
+        </AdminCard>
+      ) : (
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {categories.map((cat) => (
           <AdminCard key={cat.id} className="p-4">
             <div className="mb-3 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-cream">
-                  <Image
-                    src={cat.image}
-                    alt={cat.label}
-                    fill
-                    className="object-contain p-1"
-                    sizes="48px"
-                  />
+                  {cat.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={resolveMediaUrl(cat.image)}
+                      alt={cat.label}
+                      className="h-full w-full object-contain p-1"
+                    />
+                  ) : null}
                 </div>
                 <div>
                   <p className="font-medium text-coffee">{cat.label}</p>
@@ -263,6 +293,7 @@ export default function AdminCategoriesPage() {
           </AdminCard>
         ))}
       </div>
+      )}
     </div>
   );
 }
