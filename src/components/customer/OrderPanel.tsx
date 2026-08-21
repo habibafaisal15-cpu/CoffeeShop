@@ -35,7 +35,7 @@ function ServiceOptionPicker({
       <button
         type="button"
         onClick={() => onSelect("pickup")}
-        className={`overflow-hidden rounded-2xl border-2 text-left transition ${
+        className={`group overflow-hidden rounded-2xl border-2 text-left transition ${
           serviceType === "pickup"
             ? "border-[#C9A84C] bg-[#FFFCF8] shadow-md"
             : "border-[#E8DCC8] bg-white/50 hover:border-[#D4BC82]"
@@ -46,7 +46,7 @@ function ServiceOptionPicker({
           <img
             src="/images/pickup-ghibli.png"
             alt=""
-            className="h-full w-full object-cover object-center"
+            className="ghibli-hover-img h-full w-full object-cover object-center"
           />
         </div>
         <p className="px-2 py-2 text-center font-serif text-xs font-semibold uppercase tracking-wide text-[#5C4A3A]">
@@ -56,7 +56,7 @@ function ServiceOptionPicker({
       <button
         type="button"
         onClick={() => onSelect("delivery")}
-        className={`overflow-hidden rounded-2xl border-2 text-left transition ${
+        className={`group overflow-hidden rounded-2xl border-2 text-left transition ${
           serviceType === "delivery"
             ? "border-[#C9A84C] bg-[#FFFCF8] shadow-md"
             : "border-[#E8DCC8] bg-white/50 hover:border-[#D4BC82]"
@@ -67,7 +67,7 @@ function ServiceOptionPicker({
           <img
             src="/images/delivery-ghibli.png"
             alt=""
-            className="h-full w-full object-cover object-center"
+            className="ghibli-hover-img ghibli-hover-img--delivery h-full w-full object-cover object-center"
           />
         </div>
         <p className="px-2 py-2 text-center font-serif text-xs font-semibold uppercase tracking-wide text-[#5C4A3A]">

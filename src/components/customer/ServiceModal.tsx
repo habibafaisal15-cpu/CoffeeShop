@@ -31,13 +31,23 @@ function WheatSprig({ className }: { className?: string }) {
   );
 }
 
-function GhibliOptionImage({ src, alt }: { src: string; alt: string }) {
+function GhibliOptionImage({
+  src,
+  alt,
+  variant = "pickup",
+}: {
+  src: string;
+  alt: string;
+  variant?: "pickup" | "delivery";
+}) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}
-      className="h-full w-full object-cover object-center"
+      className={`ghibli-hover-img h-full w-full object-cover object-center ${
+        variant === "delivery" ? "ghibli-hover-img--delivery" : ""
+      }`}
       loading="eager"
       decoding="async"
     />
@@ -117,6 +127,7 @@ export function ServiceModal() {
                 <GhibliOptionImage
                   src="/images/pickup-ghibli.png"
                   alt="Barista handing coffee to customer at pickup counter"
+                  variant="pickup"
                 />
               </div>
               <h3 className="text-center font-serif text-2xl font-semibold tracking-wide text-[#5C4A3A] sm:text-[1.7rem]">
@@ -136,6 +147,7 @@ export function ServiceModal() {
                 <GhibliOptionImage
                   src="/images/delivery-ghibli.png"
                   alt="Delivery rider on scooter with coffee"
+                  variant="delivery"
                 />
               </div>
               <h3 className="text-center font-serif text-2xl font-semibold tracking-wide text-[#5C4A3A] sm:text-[1.7rem]">

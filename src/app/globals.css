@@ -81,6 +81,19 @@
     transform: scale(0.98);
   }
 
+  .ghibli-hover-img {
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .group:hover .ghibli-hover-img {
+    transform: scale(1.1) translateY(-6px);
+  }
+
+  .group:hover .ghibli-hover-img--delivery {
+    transform: scale(1.1) translate(5px, -5px);
+  }
+
   .hero-panel {
     background-color: #eff4f9;
     border: 1px solid #dde8f2;
