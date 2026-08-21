@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth-session";
+import { getSiteMode } from "@/lib/site-mode";
 
 const PROTECTED_API = [
   "/api/products/manage",
@@ -9,8 +10,17 @@ const PROTECTED_API = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const mode = getSiteMode();
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const authed = await verifySessionToken(token);
+
+  if (mode === "customer" && pathname.startsWith("/admin")) {
+    return new NextResponse(null, { status: 404 });
+  }
+
+  if (mode === "admin" && pathname === "/") {
+    return NextResponse.redirect(new URL(authed ? "/admin" : "/admin/login", request.url));
+  }
 
   if (pathname.startsWith("/admin")) {
     if (pathname.startsWith("/admin/login")) {
@@ -49,6 +59,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
     "/admin",
     "/admin/:path*",
     "/api/products/manage",

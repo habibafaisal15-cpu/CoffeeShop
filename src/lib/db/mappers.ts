@@ -1,0 +1,78 @@
+import { MenuCategory, Order, OrderItem, Product } from "../types";
+
+export type CategoryRow = {
+  id: string;
+  label: string;
+  image: string;
+  sort_order: number;
+  visible: boolean;
+  show_in_carousel: boolean;
+  show_in_nav: boolean;
+};
+
+export type ProductRow = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  popular: boolean;
+  available: boolean;
+};
+
+export type OrderRow = {
+  id: string;
+  items: OrderItem[] | string;
+  subtotal: number;
+  total: number;
+  service_type: string;
+  status: string;
+  delivery_instructions: string | null;
+  points_earned: number;
+  created_at: Date | string;
+  updated_at: Date | string;
+};
+
+export function mapCategory(row: CategoryRow): MenuCategory {
+  return {
+    id: row.id,
+    label: row.label,
+    image: row.image,
+    sortOrder: row.sort_order,
+    visible: row.visible,
+    showInCarousel: row.show_in_carousel,
+    showInNav: row.show_in_nav,
+  };
+}
+
+export function mapProduct(row: ProductRow): Product {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    price: row.price,
+    category: row.category,
+    image: row.image,
+    popular: row.popular,
+    available: row.available,
+  };
+}
+
+export function mapOrder(row: OrderRow): Order {
+  const items =
+    typeof row.items === "string" ? (JSON.parse(row.items) as OrderItem[]) : row.items;
+
+  return {
+    id: row.id,
+    items,
+    subtotal: row.subtotal,
+    total: row.total,
+    serviceType: row.service_type as Order["serviceType"],
+    status: row.status as Order["status"],
+    deliveryInstructions: row.delivery_instructions ?? undefined,
+    pointsEarned: row.points_earned,
+    createdAt: new Date(row.created_at).toISOString(),
+    updatedAt: new Date(row.updated_at).toISOString(),
+  };
+}

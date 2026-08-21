@@ -1,133 +1,242 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import path from "path";
 import { DEFAULT_CATEGORIES } from "./categories";
-import { DEFAULT_PRODUCTS } from "./data";
-import { getDataDir } from "./storage-paths";
+import { getSql } from "./db/client";
+import { ensureDb } from "./db/init";
+import {
+  mapCategory,
+  mapOrder,
+  mapProduct,
+  type CategoryRow,
+  type OrderRow,
+  type ProductRow,
+} from "./db/mappers";
 import { MenuCategory, Order, Product } from "./types";
 
-const DATA_DIR = getDataDir();
-const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
-const ORDERS_FILE = path.join(DATA_DIR, "orders.json");
-const CATEGORIES_FILE = path.join(DATA_DIR, "categories.json");
+export { ensureDb };
 
-function ensureDataDir() {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true });
-  }
+export async function getProducts(): Promise<Product[]> {
+  await ensureDb();
+  const rows = await getSql()<ProductRow[]>`
+    SELECT * FROM products ORDER BY name ASC
+  `;
+  return rows.map(mapProduct);
 }
 
-function readJson<T>(filePath: string, fallback: T): T {
-  if (!existsSync(filePath)) {
-    return fallback;
-  }
-  try {
-    return JSON.parse(readFileSync(filePath, "utf-8")) as T;
-  } catch {
-    return fallback;
-  }
+export async function createProduct(product: Product): Promise<Product> {
+  await ensureDb();
+  const sql = getSql();
+  await sql`
+    INSERT INTO products (
+      id, name, description, price, category, image, popular, available
+    ) VALUES (
+      ${product.id},
+      ${product.name},
+      ${product.description},
+      ${product.price},
+      ${product.category},
+      ${product.image},
+      ${product.popular ?? false},
+      ${product.available}
+    )
+  `;
+  return product;
 }
 
-function writeJson<T>(filePath: string, data: T) {
-  ensureDataDir();
-  writeFileSync(filePath, JSON.stringify(data, null, 2));
+export async function updateProduct(product: Product): Promise<Product | null> {
+  await ensureDb();
+  const sql = getSql();
+  const rows = await sql<ProductRow[]>`
+    UPDATE products SET
+      name = ${product.name},
+      description = ${product.description},
+      price = ${product.price},
+      category = ${product.category},
+      image = ${product.image},
+      popular = ${product.popular ?? false},
+      available = ${product.available}
+    WHERE id = ${product.id}
+    RETURNING *
+  `;
+  const row = rows[0] as ProductRow | undefined;
+  return row ? mapProduct(row) : null;
 }
 
-export function getProducts(): Product[] {
-  return readJson<Product[]>(PRODUCTS_FILE, DEFAULT_PRODUCTS);
+export async function deleteProduct(id: string): Promise<boolean> {
+  await ensureDb();
+  const sql = getSql();
+  const rows = await sql`DELETE FROM products WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
 }
 
-export function saveProducts(products: Product[]) {
-  writeJson(PRODUCTS_FILE, products);
-}
-
-export function getCategories(): MenuCategory[] {
-  const stored = readJson<MenuCategory[]>(CATEGORIES_FILE, DEFAULT_CATEGORIES);
-  const byId = new Map(stored.map((c) => [c.id, c]));
+export async function getCategories(): Promise<MenuCategory[]> {
+  await ensureDb();
+  const rows = await getSql()<CategoryRow[]>`
+    SELECT * FROM categories ORDER BY sort_order ASC
+  `;
+  const byId = new Map(rows.map((row) => [row.id, mapCategory(row)]));
 
   for (const def of DEFAULT_CATEGORIES) {
-    if (!byId.has(def.id)) byId.set(def.id, def);
+    if (!byId.has(def.id)) {
+      byId.set(def.id, def);
+    }
   }
 
   return Array.from(byId.values()).sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
-export function saveCategories(categories: MenuCategory[]) {
-  writeJson(CATEGORIES_FILE, categories);
+export async function getCategoryById(id: string): Promise<MenuCategory | null> {
+  const categories = await getCategories();
+  return categories.find((c) => c.id === id) ?? null;
 }
 
-export function getCategoryById(id: string): MenuCategory | null {
-  return getCategories().find((c) => c.id === id) ?? null;
-}
-
-export function addCategory(category: MenuCategory): MenuCategory {
-  const categories = getCategories();
-  categories.push(category);
-  saveCategories(categories);
+export async function addCategory(category: MenuCategory): Promise<MenuCategory> {
+  await ensureDb();
+  const sql = getSql();
+  await sql`
+    INSERT INTO categories (
+      id, label, image, sort_order, visible, show_in_carousel, show_in_nav
+    ) VALUES (
+      ${category.id},
+      ${category.label},
+      ${category.image},
+      ${category.sortOrder},
+      ${category.visible},
+      ${category.showInCarousel},
+      ${category.showInNav}
+    )
+  `;
   return category;
 }
 
-export function updateCategory(
+export async function updateCategory(
   id: string,
   updates: Partial<MenuCategory>
-): MenuCategory | null {
-  const categories = getCategories();
-  const index = categories.findIndex((c) => c.id === id);
-  if (index === -1) return null;
-  categories[index] = { ...categories[index], ...updates };
-  saveCategories(categories);
-  return categories[index];
+): Promise<MenuCategory | null> {
+  await ensureDb();
+  const existing = await getCategoryById(id);
+  if (!existing) return null;
+
+  const next: MenuCategory = { ...existing, ...updates };
+  const sql = getSql();
+  const rows = await sql<CategoryRow[]>`
+    UPDATE categories SET
+      label = ${next.label},
+      image = ${next.image},
+      sort_order = ${next.sortOrder},
+      visible = ${next.visible},
+      show_in_carousel = ${next.showInCarousel},
+      show_in_nav = ${next.showInNav}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  const row = rows[0] as CategoryRow | undefined;
+  return row ? mapCategory(row) : null;
 }
 
-export function deleteCategory(id: string): boolean {
-  const products = getProducts();
-  if (products.some((p) => p.category === id)) return false;
-  const categories = getCategories().filter((c) => c.id !== id);
-  if (categories.length === getCategories().length) return false;
-  saveCategories(categories);
-  return true;
+export async function deleteCategory(id: string): Promise<boolean> {
+  await ensureDb();
+  const sql = getSql();
+  const rows = await sql`DELETE FROM categories WHERE id = ${id} RETURNING id`;
+  return rows.length > 0;
 }
 
-export function getOrders(): Order[] {
-  return readJson<Order[]>(ORDERS_FILE, []);
+export async function getOrders(): Promise<Order[]> {
+  await ensureDb();
+  const rows = await getSql()<OrderRow[]>`
+    SELECT * FROM orders ORDER BY created_at DESC
+  `;
+  return rows.map(mapOrder);
 }
 
-export function saveOrders(orders: Order[]) {
-  writeJson(ORDERS_FILE, orders);
+export async function getOrderById(id: string): Promise<Order | null> {
+  await ensureDb();
+  const sql = getSql();
+  const rows = await sql<OrderRow[]>`
+    SELECT * FROM orders WHERE id = ${id} LIMIT 1
+  `;
+  const row = rows[0] as OrderRow | undefined;
+  return row ? mapOrder(row) : null;
 }
 
-export function addOrder(order: Order): Order {
-  const orders = getOrders();
-  orders.unshift(order);
-  saveOrders(orders);
+export async function addOrder(order: Order): Promise<Order> {
+  await ensureDb();
+  const sql = getSql();
+  await sql`
+    INSERT INTO orders (
+      id,
+      items,
+      subtotal,
+      total,
+      service_type,
+      status,
+      delivery_instructions,
+      points_earned,
+      created_at,
+      updated_at
+    ) VALUES (
+      ${order.id},
+      ${sql.json(order.items as unknown as import("postgres").JSONValue)},
+      ${order.subtotal},
+      ${order.total},
+      ${order.serviceType},
+      ${order.status},
+      ${order.deliveryInstructions ?? null},
+      ${order.pointsEarned},
+      ${order.createdAt},
+      ${order.updatedAt}
+    )
+  `;
   return order;
 }
 
-export function updateOrder(
+export async function updateOrder(
   id: string,
   updates: Partial<Order>
-): Order | null {
-  const orders = getOrders();
-  const index = orders.findIndex((o) => o.id === id);
-  if (index === -1) return null;
-  orders[index] = {
-    ...orders[index],
+): Promise<Order | null> {
+  await ensureDb();
+  const existing = await getOrderById(id);
+  if (!existing) return null;
+
+  const next: Order = {
+    ...existing,
     ...updates,
     updatedAt: new Date().toISOString(),
   };
-  saveOrders(orders);
-  return orders[index];
+
+  const sql = getSql();
+  const rows = await sql<OrderRow[]>`
+    UPDATE orders SET
+      items = ${sql.json(next.items as unknown as import("postgres").JSONValue)},
+      subtotal = ${next.subtotal},
+      total = ${next.total},
+      service_type = ${next.serviceType},
+      status = ${next.status},
+      delivery_instructions = ${next.deliveryInstructions ?? null},
+      points_earned = ${next.pointsEarned},
+      updated_at = ${next.updatedAt}
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  const row = rows[0] as OrderRow | undefined;
+  return row ? mapOrder(row) : null;
 }
 
-export function getOrderById(id: string): Order | null {
-  return getOrders().find((o) => o.id === id) ?? null;
+export async function generateOrderId(): Promise<string> {
+  await ensureDb();
+  const sql = getSql();
+
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const id = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const rows = await sql`SELECT id FROM orders WHERE id = ${id} LIMIT 1`;
+    if (rows.length === 0) return id;
+  }
+
+  return `ORD-${Date.now()}`;
 }
 
-export function generateOrderId(): string {
-  const num = Math.floor(1000 + Math.random() * 9000);
-  return `ORD-${num}`;
-}
-
-export function calculatePoints(total: number, serviceType: "pickup" | "delivery"): number {
+export function calculatePoints(
+  total: number,
+  serviceType: "pickup" | "delivery"
+): number {
   const base = Math.floor(total / 10);
   return serviceType === "delivery" ? base * 2 : base;
 }

@@ -10,7 +10,10 @@ import {
   ArrowLeft,
   Coffee,
   LogOut,
+  ExternalLink,
 } from "lucide-react";
+
+const CUSTOMER_URL = process.env.NEXT_PUBLIC_CUSTOMER_URL?.trim() || "";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -66,13 +69,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="space-y-1 border-t border-linen/40 p-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm text-coffee-muted transition hover:bg-cream/25 hover:text-coffee"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Kiosk
-          </Link>
+          {CUSTOMER_URL ? (
+            <a
+              href={CUSTOMER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm text-coffee-muted transition hover:bg-cream/25 hover:text-coffee"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Customer Kiosk
+            </a>
+          ) : (
+            <Link
+              href="/"
+              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm text-coffee-muted transition hover:bg-cream/25 hover:text-coffee"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Kiosk
+            </Link>
+          )}
           <button
             type="button"
             onClick={handleLogout}
