@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "img.icons8.com" },
+      { protocol: "https", hostname: "bgupvqeccxztvkfuvefl.supabase.co" },
     ],
   },
 };

@@ -3,6 +3,8 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth-session";
 import { getPublicUploadUrl, getUploadsDir } from "@/lib/storage-paths";
+import { uploadToSupabase } from "@/lib/supabase-storage";
+
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -39,10 +41,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadsDir = getUploadsDir();
-    if (!existsSync(uploadsDir)) {
-      mkdirSync(uploadsDir, { recursive: true });
-    }
     const ext = path.extname(file.name) || ".jpg";
     const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(
       ext.toLowerCase()
@@ -51,9 +49,22 @@ export async function POST(request: NextRequest) {
       : ".jpg";
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}${safeExt}`;
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    const supabaseUrl = await uploadToSupabase(filename, buffer, file.type);
+    if (supabaseUrl) {
+      return NextResponse.json({ url: supabaseUrl });
+    }
+
+    const uploadsDir = getUploadsDir();
+    if (!existsSync(uploadsDir)) {
+      mkdirSync(uploadsDir, { recursive: true });
+    }
     writeFileSync(path.join(uploadsDir, filename), buffer);
 
-    return NextResponse.json({ url: getPublicUploadUrl(filename) });  } catch {
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+    return NextResponse.json({ url: getPublicUploadUrl(filename) });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Upload failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

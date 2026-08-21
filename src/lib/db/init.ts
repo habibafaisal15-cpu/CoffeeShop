@@ -1,6 +1,7 @@
 import { DEFAULT_CATEGORIES } from "../categories";
 import { DEFAULT_PRODUCTS } from "../data";
 import { getSql } from "./client";
+import { createProductsTable, getProductsTable } from "./tables";
 
 let initPromise: Promise<void> | null = null;
 
@@ -19,18 +20,8 @@ async function runSchema() {
     )
   `;
 
-  await sql`
-    CREATE TABLE IF NOT EXISTS products (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT NOT NULL DEFAULT '',
-      price INTEGER NOT NULL,
-      category TEXT NOT NULL,
-      image TEXT NOT NULL DEFAULT '',
-      popular BOOLEAN NOT NULL DEFAULT FALSE,
-      available BOOLEAN NOT NULL DEFAULT TRUE
-    )
-  `;
+  const productsTable = await getProductsTable();
+  await createProductsTable(productsTable);
 
   await sql`
     CREATE TABLE IF NOT EXISTS orders (
@@ -50,6 +41,8 @@ async function runSchema() {
 
 async function seedDefaults() {
   const sql = getSql();
+  const productsTable = await getProductsTable();
+
   const [{ count: categoryCount }] = await sql<{ count: string }[]>`
     SELECT COUNT(*)::text AS count FROM categories
   `;
@@ -74,13 +67,13 @@ async function seedDefaults() {
   }
 
   const [{ count: productCount }] = await sql<{ count: string }[]>`
-    SELECT COUNT(*)::text AS count FROM products
+    SELECT COUNT(*)::text AS count FROM ${sql(productsTable)}
   `;
 
   if (Number(productCount) === 0) {
     for (const product of DEFAULT_PRODUCTS) {
       await sql`
-        INSERT INTO products (
+        INSERT INTO ${sql(productsTable)} (
           id, name, description, price, category, image, popular, available
         ) VALUES (
           ${product.id},

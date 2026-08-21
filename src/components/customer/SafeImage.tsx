@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 interface SafeImageProps {
   src: string;
@@ -22,16 +23,17 @@ export function SafeImage({
   fill,
   fallback,
 }: SafeImageProps) {
+  const resolved = resolveMediaUrl(src);
   const [failed, setFailed] = useState(false);
 
-  if (failed || !src) {
+  if (failed || !resolved) {
     return <>{fallback}</>;
   }
 
   if (fill) {
     return (
       <Image
-        src={src}
+        src={resolved}
         alt={alt}
         fill
         className={className}
@@ -42,7 +44,7 @@ export function SafeImage({
 
   return (
     <Image
-      src={src}
+      src={resolved}
       alt={alt}
       width={width ?? 40}
       height={height ?? 40}

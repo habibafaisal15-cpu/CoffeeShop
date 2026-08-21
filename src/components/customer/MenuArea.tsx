@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { PRODUCT_IMAGES } from "@/lib/data";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { formatPKR, useCartStore } from "@/lib/store";
 import { SafeImage } from "@/components/customer/SafeImage";
 import {
@@ -85,7 +86,7 @@ export function MenuArea({
   const carouselCategories = getCarouselCategories(categories);
 
   const filtered = products.filter((p) => {
-    if (!p.available) return false;
+    if (p.available === false) return false;
     const matchesSearch =
       !searchQuery ||
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -360,7 +361,7 @@ function menuImageSources(product: Product): string[] {
   const sources: string[] = [];
 
   if (product.image?.trim()) {
-    sources.push(product.image.trim());
+    sources.push(resolveMediaUrl(product.image.trim()));
   }
 
   const fallbacks = MENU_IMAGE_FALLBACKS[product.id] ?? [];

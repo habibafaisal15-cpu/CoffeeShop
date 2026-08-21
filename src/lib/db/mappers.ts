@@ -13,12 +13,12 @@ export type CategoryRow = {
 export type ProductRow = {
   id: string;
   name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string;
-  popular: boolean;
-  available: boolean;
+  description: string | null;
+  price: number | string;
+  category?: string;
+  image?: string;
+  popular?: boolean;
+  available?: boolean;
 };
 
 export type OrderRow = {
@@ -46,16 +46,22 @@ export function mapCategory(row: CategoryRow): MenuCategory {
   };
 }
 
+function toPrice(value: ProductRow["price"]): number {
+  if (typeof value === "number") return value;
+  const parsed = Number.parseFloat(String(value));
+  return Number.isFinite(parsed) ? Math.round(parsed) : 0;
+}
+
 export function mapProduct(row: ProductRow): Product {
   return {
     id: row.id,
     name: row.name,
-    description: row.description,
-    price: row.price,
-    category: row.category,
-    image: row.image,
-    popular: row.popular,
-    available: row.available,
+    description: row.description ?? "",
+    price: toPrice(row.price),
+    category: row.category ?? "coffee",
+    image: row.image ?? "",
+    popular: row.popular ?? false,
+    available: row.available ?? true,
   };
 }
 

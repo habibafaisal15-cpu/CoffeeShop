@@ -6,6 +6,7 @@ import { Product } from "@/lib/types";
 import { Order } from "@/lib/types";
 import { formatPKR, getCartTotals, useCartStore, calculateOrderPoints } from "@/lib/store";
 import { PRODUCT_IMAGES } from "@/lib/data";
+import { resolveMediaUrl } from "@/lib/media-url";
 import { SafeImage } from "@/components/customer/SafeImage";
 import {
   IconChat,
@@ -23,7 +24,7 @@ const CART_SHELL =
   "glass-cart relative z-10 mx-2 flex h-[62vh] max-h-[62vh] w-full flex-col overflow-hidden rounded-t-[20px] p-4 text-[#2A1E17] sm:h-[68vh] sm:max-h-[68vh] sm:rounded-[20px] sm:p-5 xl:mx-3 xl:mb-8 xl:h-[calc(100vh-2rem)] xl:max-h-[calc(100vh-2rem)] xl:rounded-[20px] xl:p-5";
 
 function cartDisplayImage(productId: string, image: string) {
-  if (image?.trim()) return image.trim();
+  if (image?.trim()) return resolveMediaUrl(image.trim());
   return PRODUCT_IMAGES[productId] ?? "";
 }
 

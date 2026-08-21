@@ -1,6 +1,7 @@
 import { DEFAULT_CATEGORIES } from "./categories";
 import { getSql } from "./db/client";
 import { ensureDb } from "./db/init";
+import { getProductsTable } from "./db/tables";
 import {
   mapCategory,
   mapOrder,
@@ -15,8 +16,10 @@ export { ensureDb };
 
 export async function getProducts(): Promise<Product[]> {
   await ensureDb();
-  const rows = await getSql()<ProductRow[]>`
-    SELECT * FROM products ORDER BY name ASC
+  const sql = getSql();
+  const productsTable = await getProductsTable();
+  const rows = await sql<ProductRow[]>`
+    SELECT * FROM ${sql(productsTable)} ORDER BY name ASC
   `;
   return rows.map(mapProduct);
 }
@@ -24,8 +27,9 @@ export async function getProducts(): Promise<Product[]> {
 export async function createProduct(product: Product): Promise<Product> {
   await ensureDb();
   const sql = getSql();
+  const productsTable = await getProductsTable();
   await sql`
-    INSERT INTO products (
+    INSERT INTO ${sql(productsTable)} (
       id, name, description, price, category, image, popular, available
     ) VALUES (
       ${product.id},
@@ -44,8 +48,9 @@ export async function createProduct(product: Product): Promise<Product> {
 export async function updateProduct(product: Product): Promise<Product | null> {
   await ensureDb();
   const sql = getSql();
+  const productsTable = await getProductsTable();
   const rows = await sql<ProductRow[]>`
-    UPDATE products SET
+    UPDATE ${sql(productsTable)} SET
       name = ${product.name},
       description = ${product.description},
       price = ${product.price},
@@ -63,7 +68,10 @@ export async function updateProduct(product: Product): Promise<Product | null> {
 export async function deleteProduct(id: string): Promise<boolean> {
   await ensureDb();
   const sql = getSql();
-  const rows = await sql`DELETE FROM products WHERE id = ${id} RETURNING id`;
+  const productsTable = await getProductsTable();
+  const rows = await sql`
+    DELETE FROM ${sql(productsTable)} WHERE id = ${id} RETURNING id
+  `;
   return rows.length > 0;
 }
 
