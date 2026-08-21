@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    min-height: 100%;
+    color: #2a1e17;
+    background-color: #8fa88a;
+  }
+}
+
+@layer components {
+  .sidebar-panel {
+    background-color: #d3b683;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='6' cy='6' r='0.65' fill='rgba(255,255,255,0.16)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E"),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.05) 100%);
+    background-size: 12px 12px, 200px 200px, 100% 100%;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 -2px 8px rgba(62, 39, 35, 0.07),
+      0 8px 28px rgba(62, 39, 35, 0.12);
+  }
+
+  .glass-sidebar {
+    background-color: #d3b683;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background-image:
+      url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='6' cy='6' r='0.65' fill='rgba(255,255,255,0.16)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.2'/%3E%3C/svg%3E");
+    background-size: 12px 12px, 200px 200px;
+  }
+
+  .glass-cart {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(8px) saturate(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(1.05);
+    box-shadow:
+      0 6px 20px rgba(45, 55, 45, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+
+  .cart-row {
+    background: #f7f3ee;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 10px rgba(62, 39, 35, 0.07);
+  }
+
+  .menu-surface {
+    background: transparent;
+  }
+
+  .menu-section-title {
+    text-shadow: 0 1px 10px rgba(34, 23, 20, 0.35);
+  }
+
+  .bake-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .bake-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(34, 23, 20, 0.24);
+  }
+
+  .bake-card-cta {
+    background-color: #221714;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+
+  .bake-card-cta:hover {
+    background-color: #2f211d;
+  }
+
+  .bake-card-cta:active {
+    transform: scale(0.98);
+  }
+
+  .hero-panel {
+    background-color: #eff4f9;
+    border: 1px solid #dde8f2;
+    background-image:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0) 38%),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 100% 100%, 200px 200px;
+  }
+
+  .btn-track {
+    background-color: #8ca086;
+    color: #ffffff;
+    transition: background-color 0.2s;
+  }
+
+  .btn-track:hover:not(:disabled) {
+    background-color: #7a9074;
+  }
+
+  .btn-add {
+    background-color: #c99e92;
+    color: #ffffff;
+    transition: background-color 0.2s;
+  }
+
+  .btn-add:hover {
+    background-color: #b88e82;
+  }
+
+  .btn-chat {
+    background-color: #b8887d;
+    color: #ffffff;
+  }
+
+  .bg-marble-scene {
+    background-color: #728070;
+    background-image:
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E"),
+      radial-gradient(ellipse 90% 70% at 20% 15%, rgba(255, 255, 255, 0.14) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 75% 80%, rgba(40, 50, 38, 0.2) 0%, transparent 55%),
+      radial-gradient(ellipse 45% 35% at 55% 45%, rgba(255, 255, 255, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 30% 25% at 85% 25%, rgba(90, 105, 88, 0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 25% 20% at 10% 70%, rgba(55, 65, 52, 0.25) 0%, transparent 55%),
+      linear-gradient(152deg, #7a8878 0%, #6d7b6c 28%, #758374 52%, #6a7869 78%, #727f71 100%);
+  }
+
+  .bg-pattern {
+    background-color: #f5f0e8;
+    background-image: radial-gradient(
+      circle at 20% 30%,
+      rgba(163, 177, 138, 0.08) 0%,
+      transparent 50%
+    );
+  }
+
+  .admin-card {
+    @apply rounded-2xl border border-linen/50 bg-cream/95 shadow-card backdrop-blur-sm;
+  }
+
+  .admin-input {
+    @apply w-full rounded-xl border border-linen bg-cream/50 px-3 py-2 text-sm text-coffee outline-none transition focus:border-sage-medium focus:ring-1 focus:ring-sage-light/50;
+  }
+
+  .admin-btn-primary {
+    @apply rounded-xl bg-sage-deep px-4 py-2 text-sm font-medium text-cream transition hover:bg-sage-medium;
+  }
+
+  .admin-btn-secondary {
+    @apply rounded-xl border border-linen bg-cream/90 px-4 py-2 text-sm font-medium text-coffee transition hover:bg-cream;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
