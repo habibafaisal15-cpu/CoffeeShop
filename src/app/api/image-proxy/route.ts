@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const upstream = await fetch(raw, { cache: "force-cache" });
+    const upstream = await fetch(raw, { cache: "no-store" });
     if (!upstream.ok) {
       return NextResponse.json({ error: "Image not found" }, { status: upstream.status });
     }
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+        "Cache-Control": "no-store",
       },
     });
   } catch {

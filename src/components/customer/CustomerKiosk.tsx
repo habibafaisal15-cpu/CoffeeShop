@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Category, NavCategory, Product, MenuCategory } from "@/lib/types";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
@@ -35,9 +36,10 @@ async function fetchKioskData(): Promise<{
   products: Product[];
   categories: MenuCategory[];
 }> {
+  const bust = Date.now();
   const [productsRes, categoriesRes] = await Promise.all([
-    fetch("/api/products", { cache: "no-store" }),
-    fetch("/api/categories", { cache: "no-store" }),
+    fetch(`/api/products?_=${bust}`, { cache: "no-store" }),
+    fetch(`/api/categories?_=${bust}`, { cache: "no-store" }),
   ]);
 
   const [productsData, categoriesData] = await Promise.all([
@@ -55,6 +57,7 @@ export function CustomerKiosk({
   initialProducts,
   initialCategories,
 }: CustomerKioskProps) {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
   const [categories, setCategories] = useState<MenuCategory[]>(
     initialCategories ?? []
@@ -62,6 +65,7 @@ export function CustomerKiosk({
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
@@ -72,8 +76,10 @@ export function CustomerKiosk({
       try {
         const data = await fetchKioskData();
         if (cancelled) return;
-        if (data.products.length > 0) setProducts(data.products);
-        if (data.categories.length > 0) setCategories(data.categories);
+        setProducts(data.products);
+        setCategories(data.categories);
+        setRefreshKey((k) => k + 1);
+        router.refresh();
       } catch {
         /* keep last loaded data */
       } finally {
@@ -83,14 +89,20 @@ export function CustomerKiosk({
 
     void refresh();
 
-    const onFocus = () => void refresh();
-    window.addEventListener("focus", onFocus);
+    const onRefresh = () => void refresh();
+    window.addEventListener("focus", onRefresh);
+    window.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") onRefresh();
+    });
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) onRefresh();
+    });
 
     return () => {
       cancelled = true;
-      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("focus", onRefresh);
     };
-  }, []);
+  }, [router]);
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);
@@ -135,6 +147,7 @@ export function CustomerKiosk({
       <div className="relative z-10 flex min-h-[calc(100vh-3.5rem)] flex-col gap-2 px-2 pb-4 xl:min-h-screen xl:flex-row xl:items-stretch xl:gap-0 xl:px-0 xl:py-4">
         <Sidebar activeNav={activeNav} onNavChange={handleNavChange} />
         <MenuArea
+          key={refreshKey}
           products={products}
           categories={categories}
           activeCategory={activeCategory}

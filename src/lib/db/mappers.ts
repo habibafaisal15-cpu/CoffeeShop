@@ -1,5 +1,22 @@
+import { DEFAULT_CATEGORIES } from "../categories";
 import { MenuCategory, Order, OrderItem, Product } from "../types";
 import { resolveMediaUrl } from "../media-url";
+
+const DEFAULT_CATEGORY_IMAGES = Object.fromEntries(
+  DEFAULT_CATEGORIES.map((category) => [category.id, category.image])
+);
+
+/** Vercel /api/uploads files are ephemeral — treat as missing. */
+function sanitizeStoredImage(stored: string, categoryId?: string): string {
+  const value = stored?.trim() ?? "";
+  if (!value) return categoryId ? (DEFAULT_CATEGORY_IMAGES[categoryId] ?? "") : "";
+
+  if (/\/api\/uploads\//i.test(value) || /^\/uploads\//i.test(value)) {
+    return categoryId ? (DEFAULT_CATEGORY_IMAGES[categoryId] ?? "") : "";
+  }
+
+  return resolveMediaUrl(value);
+}
 
 export type CategoryRow = {
   id: string;
@@ -39,7 +56,7 @@ export function mapCategory(row: CategoryRow): MenuCategory {
   return {
     id: row.id,
     label: row.label,
-    image: resolveMediaUrl(row.image),
+    image: sanitizeStoredImage(row.image, row.id),
     sortOrder: row.sort_order,
     visible: row.visible,
     showInCarousel: row.show_in_carousel,
@@ -60,7 +77,7 @@ export function mapProduct(row: ProductRow): Product {
     description: row.description ?? "",
     price: toPrice(row.price),
     category: row.category ?? "coffee",
-    image: resolveMediaUrl(row.image ?? ""),
+    image: sanitizeStoredImage(row.image ?? ""),
     popular: row.popular ?? false,
     available: row.available ?? true,
   };
