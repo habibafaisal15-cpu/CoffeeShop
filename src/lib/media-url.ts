@@ -1,5 +1,5 @@
 /**
- * Turn stored image paths into absolute URLs both deployments can load.
+ * Resolve stored image paths to URLs the customer kiosk can always load.
  */
 export function getMediaBaseUrl(): string {
   const fromEnv =
@@ -34,6 +34,22 @@ export function resolveMediaUrl(src: string | undefined | null): string {
   }
 
   return `${base}/${value}`;
+}
+
+/** Same-origin proxy so Supabase/admin images always render on the customer site. */
+export function resolveCustomerMediaUrl(src: string | undefined | null): string {
+  const absolute = resolveMediaUrl(src);
+  if (!absolute) return "";
+
+  if (absolute.startsWith("/") && !absolute.startsWith("//")) {
+    return absolute;
+  }
+
+  if (/^https?:\/\//i.test(absolute)) {
+    return `/api/image-proxy?url=${encodeURIComponent(absolute)}`;
+  }
+
+  return absolute;
 }
 
 export function isSupabaseMediaUrl(src: string | undefined | null): boolean {

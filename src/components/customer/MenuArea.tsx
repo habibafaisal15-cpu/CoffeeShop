@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { PRODUCT_IMAGES } from "@/lib/data";
-import { resolveMediaUrl, isCustomUploadUrl } from "@/lib/media-url";
+import { resolveCustomerMediaUrl, isCustomUploadUrl } from "@/lib/media-url";
 import { formatPKR, useCartStore } from "@/lib/store";
 import { SafeImage } from "@/components/customer/SafeImage";
 import {
@@ -361,7 +361,7 @@ function menuImageSources(product: Product): string[] {
   const sources: string[] = [];
 
   if (product.image?.trim()) {
-    sources.push(resolveMediaUrl(product.image.trim()));
+    sources.push(resolveCustomerMediaUrl(product.image.trim()));
   }
 
   if (sources.length > 0 && isCustomUploadUrl(product.image)) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { resolveMediaUrl } from "@/lib/media-url";
+import { resolveCustomerMediaUrl } from "@/lib/media-url";
 
 interface SafeImageProps {
   src: string;
@@ -22,10 +22,10 @@ export function SafeImage({
   fill,
   fallback,
 }: SafeImageProps) {
-  const resolved = resolveMediaUrl(src);
+  const resolved = resolveCustomerMediaUrl(src);
   const [failed, setFailed] = useState(false);
 
-  if (failed || !resolved) {
+  if (!resolved || failed) {
     return <>{fallback}</>;
   }
 
@@ -36,9 +36,8 @@ export function SafeImage({
         src={resolved}
         alt={alt}
         className={`absolute inset-0 h-full w-full ${className ?? "object-cover"}`}
-        loading="lazy"
+        loading="eager"
         decoding="async"
-        referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
       />
     );
@@ -52,9 +51,8 @@ export function SafeImage({
       width={width ?? 40}
       height={height ?? 40}
       className={className}
-      loading="lazy"
+      loading="eager"
       decoding="async"
-      referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
     />
   );
