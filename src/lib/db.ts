@@ -11,6 +11,7 @@ import {
   type ProductRow,
 } from "./db/mappers";
 import { MenuCategory, Order, Product } from "./types";
+import { trimMediaUrl } from "./media-url";
 
 export { ensureDb };
 
@@ -37,7 +38,7 @@ export async function createProduct(product: Product): Promise<Product> {
       ${product.description},
       ${product.price},
       ${product.category},
-      ${product.image},
+      ${trimMediaUrl(product.image)},
       ${product.popular ?? false},
       ${product.available}
     )
@@ -55,7 +56,7 @@ export async function updateProduct(product: Product): Promise<Product | null> {
       description = ${product.description},
       price = ${product.price},
       category = ${product.category},
-      image = ${product.image},
+      image = ${trimMediaUrl(product.image)},
       popular = ${product.popular ?? false},
       available = ${product.available}
     WHERE id = ${product.id}
@@ -105,7 +106,7 @@ export async function addCategory(category: MenuCategory): Promise<MenuCategory>
     ) VALUES (
       ${category.id},
       ${category.label},
-      ${category.image},
+      ${trimMediaUrl(category.image)},
       ${category.sortOrder},
       ${category.visible},
       ${category.showInCarousel},
@@ -123,7 +124,11 @@ export async function updateCategory(
   const existing = await getCategoryById(id);
   if (!existing) return null;
 
-  const next: MenuCategory = { ...existing, ...updates };
+  const next: MenuCategory = {
+    ...existing,
+    ...updates,
+    image: updates.image !== undefined ? trimMediaUrl(updates.image) : existing.image,
+  };
   const sql = getSql();
   const rows = await sql<CategoryRow[]>`
     UPDATE categories SET

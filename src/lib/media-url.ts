@@ -20,8 +20,12 @@ export function getMediaBaseUrl(): string {
   return "";
 }
 
+export function trimMediaUrl(src: string | undefined | null): string {
+  return src?.trim().replace(/[\r\n]+/g, "") ?? "";
+}
+
 export function resolveMediaUrl(src: string | undefined | null): string {
-  const value = src?.trim() ?? "";
+  const value = trimMediaUrl(src);
   if (!value) return "";
 
   if (/^https?:\/\//i.test(value)) return value;
@@ -36,7 +40,7 @@ export function resolveMediaUrl(src: string | undefined | null): string {
   return `${base}/${value}`;
 }
 
-/** Customer kiosk: direct CDN/Supabase URLs; proxy only legacy admin uploads. */
+/** Same-origin proxy so images load reliably (blockers, referrer, mixed CDN). */
 export function resolveCustomerMediaUrl(src: string | undefined | null): string {
   const absolute = resolveMediaUrl(src);
   if (!absolute) return "";
@@ -45,7 +49,7 @@ export function resolveCustomerMediaUrl(src: string | undefined | null): string 
     return absolute;
   }
 
-  if (/^https?:\/\//i.test(absolute) && /\/api\/uploads\//i.test(absolute)) {
+  if (/^https?:\/\//i.test(absolute)) {
     return `/api/image-proxy?url=${encodeURIComponent(absolute)}`;
   }
 
@@ -53,7 +57,7 @@ export function resolveCustomerMediaUrl(src: string | undefined | null): string 
 }
 
 export function isSupabaseMediaUrl(src: string | undefined | null): boolean {
-  const value = src?.trim() ?? "";
+  const value = trimMediaUrl(src);
   if (!value) return false;
   return /supabase\.co\/storage\//i.test(value);
 }

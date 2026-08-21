@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Category, NavCategory, Product, MenuCategory } from "@/lib/types";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
@@ -57,7 +56,6 @@ export function CustomerKiosk({
   initialProducts,
   initialCategories,
 }: CustomerKioskProps) {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
   const [categories, setCategories] = useState<MenuCategory[]>(
     initialCategories ?? []
@@ -79,7 +77,6 @@ export function CustomerKiosk({
         setProducts(data.products);
         setCategories(data.categories);
         setRefreshKey((k) => k + 1);
-        router.refresh();
       } catch {
         /* keep last loaded data */
       } finally {
@@ -102,7 +99,7 @@ export function CustomerKiosk({
       cancelled = true;
       window.removeEventListener("focus", onRefresh);
     };
-  }, [router]);
+  }, []);
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);
