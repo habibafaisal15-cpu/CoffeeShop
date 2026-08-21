@@ -68,6 +68,11 @@ export function CustomerKiosk({
   useEffect(() => {
     useCartStore.persist.rehydrate();
 
+    const { serviceType, setShowServiceModal } = useCartStore.getState();
+    if (!serviceType) {
+      setShowServiceModal(true);
+    }
+
     let cancelled = false;
 
     const refresh = async () => {

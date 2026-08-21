@@ -23,6 +23,61 @@ interface OrderPanelProps {
 const CART_SHELL =
   "glass-cart relative z-10 mx-2 flex h-[62vh] max-h-[62vh] w-full flex-col overflow-hidden rounded-t-[20px] p-4 text-[#2A1E17] sm:h-[68vh] sm:max-h-[68vh] sm:rounded-[20px] sm:p-5 xl:mx-3 xl:mb-8 xl:h-[calc(100vh-2rem)] xl:max-h-[calc(100vh-2rem)] xl:rounded-[20px] xl:p-5";
 
+function ServiceOptionPicker({
+  serviceType,
+  onSelect,
+}: {
+  serviceType: "pickup" | "delivery" | null;
+  onSelect: (type: "pickup" | "delivery") => void;
+}) {
+  return (
+    <div className="mb-4 grid grid-cols-2 gap-2">
+      <button
+        type="button"
+        onClick={() => onSelect("pickup")}
+        className={`overflow-hidden rounded-2xl border-2 text-left transition ${
+          serviceType === "pickup"
+            ? "border-[#C9A84C] bg-[#FFFCF8] shadow-md"
+            : "border-[#E8DCC8] bg-white/50 hover:border-[#D4BC82]"
+        }`}
+      >
+        <div className="h-16 overflow-hidden bg-[#FAF0E8]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/pickup-ghibli.png"
+            alt=""
+            className="h-full w-full object-cover object-center"
+          />
+        </div>
+        <p className="px-2 py-2 text-center font-serif text-xs font-semibold uppercase tracking-wide text-[#5C4A3A]">
+          Pickup
+        </p>
+      </button>
+      <button
+        type="button"
+        onClick={() => onSelect("delivery")}
+        className={`overflow-hidden rounded-2xl border-2 text-left transition ${
+          serviceType === "delivery"
+            ? "border-[#C9A84C] bg-[#FFFCF8] shadow-md"
+            : "border-[#E8DCC8] bg-white/50 hover:border-[#D4BC82]"
+        }`}
+      >
+        <div className="h-16 overflow-hidden bg-[#EEF4EA]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/delivery-ghibli.png"
+            alt=""
+            className="h-full w-full object-cover object-center"
+          />
+        </div>
+        <p className="px-2 py-2 text-center font-serif text-xs font-semibold uppercase tracking-wide text-[#5C4A3A]">
+          Delivery
+        </p>
+      </button>
+    </div>
+  );
+}
+
 function cartDisplayImage(productId: string, image: string) {
   if (image?.trim()) return resolveCustomerMediaUrl(image.trim());
   return PRODUCT_IMAGES[productId] ?? "";
@@ -102,6 +157,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
     setPlacedOrder,
     setShowServiceModal,
     addPoints,
+    setServiceType,
   } = useCartStore();
 
   const [isPlacing, setIsPlacing] = useState(false);
@@ -289,6 +345,14 @@ export function OrderPanel({ products }: OrderPanelProps) {
 
       {items.length > 0 && (
         <div className="mt-4 shrink-0 border-t border-white/40 pt-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#7D6B5D]">
+            Pickup or Delivery
+          </p>
+          <ServiceOptionPicker
+            serviceType={serviceType}
+            onSelect={(type) => setServiceType(type)}
+          />
+
           <div className="mb-3 space-y-1 text-sm">
             <div className="flex justify-between text-[#2A1E17]/80">
               <span>Subtotal</span>
@@ -311,7 +375,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
                 Placing Order...
               </>
             ) : !serviceType ? (
-              "Choose Pickup or Delivery"
+              "Choose Pickup or Delivery above"
             ) : (
               <>Pay {formatPKR(total)}</>
             )}
