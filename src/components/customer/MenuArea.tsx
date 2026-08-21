@@ -99,6 +99,13 @@ export function MenuArea({
   const popularPicks = POPULAR_PICK_IDS.map((id) =>
     filtered.find((p) => p.id === id)
   ).filter((p): p is Product => Boolean(p));
+
+  const isHomeView = activeCategory === "all" && !searchQuery;
+  const homePopularItems = (popularPicks.length ? popularPicks : filtered.slice(0, 3)).slice(
+    0,
+    3
+  );
+
   const sweetTreats = filtered.filter(
     (p) => p.category === "pastries" || p.category === "snacks"
   );
@@ -126,6 +133,8 @@ export function MenuArea({
       items: otherItems,
     },
   ].filter((s) => s.items.length > 0);
+
+  const catalogSections = isHomeView ? [] : sections;
 
   const hour = new Date().getHours();
   const greeting =
@@ -250,36 +259,71 @@ export function MenuArea({
       </div>
 
       <div className="mt-3 px-0.5">
-      {sections.map((section) => (
-        <section key={section.title} className="mb-8 last:mb-2">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
-              {section.title}
-            </h2>
-            {section.viewAll && (
-              <button
-                type="button"
-                className="menu-section-title text-xs font-semibold text-[#F2DABA]/90 transition hover:text-[#FAE8D0]"
-              >
-                View all →
-              </button>
-            )}
-          </div>
+      {isHomeView ? (
+        <>
+          {homePopularItems.length > 0 && (
+            <section className="mb-8">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
+                  Popular Picks
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => onCategoryChange("popular")}
+                  className="menu-section-title text-xs font-semibold text-[#F2DABA]/90 transition hover:text-[#FAE8D0]"
+                >
+                  View all →
+                </button>
+              </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
-            {section.items.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                color={BAKE_CARD_COLORS[index % BAKE_CARD_COLORS.length]}
-                onAdd={() => addItem(product.id)}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+              <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
+                {homePopularItems.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    color={BAKE_CARD_COLORS[index % BAKE_CARD_COLORS.length]}
+                    onAdd={() => addItem(product.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
-      {filtered.length === 0 && (
+          <CraftFeatureSection onExplore={() => onCategoryChange("pastries")} />
+        </>
+      ) : (
+        catalogSections.map((section) => (
+          <section key={section.title} className="mb-8 last:mb-2">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
+                {section.title}
+              </h2>
+              {section.viewAll && (
+                <button
+                  type="button"
+                  onClick={() => onCategoryChange("popular")}
+                  className="menu-section-title text-xs font-semibold text-[#F2DABA]/90 transition hover:text-[#FAE8D0]"
+                >
+                  View all →
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
+              {section.items.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  color={BAKE_CARD_COLORS[index % BAKE_CARD_COLORS.length]}
+                  onAdd={() => addItem(product.id)}
+                />
+              ))}
+            </div>
+          </section>
+        ))
+      )}
+
+      {!isHomeView && filtered.length === 0 && (
         <div className="py-12 text-center text-sm text-[#F5EDE4]/80">
           No items found. Try a different search or category.
         </div>
@@ -330,6 +374,63 @@ function menuImageSources(product: Product): string[] {
   }
 
   return sources;
+}
+
+function CraftFeatureSection({ onExplore }: { onExplore?: () => void }) {
+  return (
+    <>
+      <div className="mx-auto mb-6 max-w-xl px-4 text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#7A6B5D]">
+          OUR CRAFT
+        </p>
+        <p className="mt-3 font-serif text-lg leading-relaxed text-[#2A1E17]">
+          Every cup tells a story of carefully sourced beans and fresh bakes.
+        </p>
+      </div>
+
+      <div className="mx-6 my-8 flex flex-col items-center justify-between gap-8 rounded-[36px] bg-[#2A1E17] p-8 text-[#FAF7F2] shadow-xl md:flex-row md:p-12">
+        <div className="w-full md:max-w-md">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#C99E92]">
+            BREWED COUNTER
+          </p>
+          <h3 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">
+            Fresh from the Oven — Signature Bakes &amp; Cakes
+          </h3>
+          <p className="mt-3 max-w-md text-sm text-[#D8C7B5]">
+            Handcrafted daily using organic cocoa, fresh espresso, and premium
+            butter with 24 hours&apos; notice for custom orders.
+          </p>
+
+          <div className="my-6 flex gap-2">
+            <span className="h-2 w-6 rounded-full bg-[#A1B099]" aria-hidden />
+            <span className="h-2 w-2 rounded-full bg-[#FAF7F2]/25" aria-hidden />
+            <span className="h-2 w-2 rounded-full bg-[#FAF7F2]/25" aria-hidden />
+          </div>
+
+          <button
+            type="button"
+            onClick={onExplore}
+            className="rounded-full bg-[#A1B099] px-6 py-3 text-sm font-semibold text-[#2A1E17] transition-all hover:bg-[#8CA086]"
+          >
+            Explore Signature Bakes
+          </button>
+        </div>
+
+        <div className="relative h-72 w-full overflow-hidden rounded-[28px] shadow-md md:h-80 md:w-1/2">
+          <img
+            src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80"
+            alt="Signature cakes and bakes"
+            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+          <span className="absolute bottom-4 left-4 rounded-full bg-black/60 px-3 py-1.5 text-xs text-white backdrop-blur-md">
+            SIGNATURE CAKES
+          </span>
+        </div>
+      </div>
+    </>
+  );
 }
 
 function ProductCard({
