@@ -7,7 +7,7 @@ import { slugifyCategory } from "@/lib/categories";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { AdminField, AdminCard } from "@/components/admin/AdminField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { adminGet } from "@/lib/admin-fetch";
+import { adminGet, adminMutate } from "@/lib/admin-fetch";
 import { resolveMediaUrl } from "@/lib/media-url";
 
 const emptyCategory: Omit<MenuCategory, "id"> & { id?: string } = {
@@ -81,13 +81,11 @@ export default function AdminCategoriesPage() {
         ? { ...form, id: slugifyCategory(form.label) }
         : { ...(form as MenuCategory), id: editing!.id };
 
-      const res = await fetch("/api/categories/manage", {
-        method: isNew ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Save failed");
+      await adminMutate(
+        "/api/categories/manage",
+        isNew ? "POST" : "PUT",
+        payload
+      );
       closeForm();
       loadCategories();
     } catch (e) {
@@ -103,15 +101,15 @@ export default function AdminCategoriesPage() {
       return;
     }
     if (!confirm("Delete this category? Products must be moved first.")) return;
-    const res = await fetch(`/api/categories/manage?id=${id}`, {
-      method: "DELETE",
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      alert(data.error || "Delete failed");
-      return;
+    try {
+      await adminMutate(
+        `/api/categories/manage?id=${encodeURIComponent(id)}`,
+        "DELETE"
+      );
+      loadCategories();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Delete failed");
     }
-    loadCategories();
   };
 
   return (

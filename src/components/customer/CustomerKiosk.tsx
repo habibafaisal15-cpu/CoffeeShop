@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Category, NavCategory, Product, MenuCategory } from "@/lib/types";
-import { DEFAULT_CATEGORIES } from "@/lib/categories";
-import { DEFAULT_PRODUCTS } from "@/lib/data";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
 import { OrderPanel } from "@/components/customer/OrderPanel";
@@ -53,11 +51,9 @@ export function CustomerKiosk({
   initialProducts,
   initialCategories,
 }: CustomerKioskProps) {
-  const [products, setProducts] = useState<Product[]>(
-    initialProducts?.length ? initialProducts : DEFAULT_PRODUCTS
-  );
+  const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
   const [categories, setCategories] = useState<MenuCategory[]>(
-    initialCategories?.length ? initialCategories : DEFAULT_CATEGORIES
+    initialCategories ?? []
   );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -65,31 +61,29 @@ export function CustomerKiosk({
   useEffect(() => {
     useCartStore.persist.rehydrate();
 
-    if (initialProducts?.length && initialCategories?.length) {
-      return;
-    }
-
     let cancelled = false;
 
-    const load = async (attempt = 0) => {
+    const refresh = async () => {
       try {
         const data = await fetchKioskData();
         if (cancelled) return;
         if (data.products.length > 0) setProducts(data.products);
         if (data.categories.length > 0) setCategories(data.categories);
       } catch {
-        if (!cancelled && attempt < 2) {
-          window.setTimeout(() => void load(attempt + 1), 1500 * (attempt + 1));
-        }
+        /* keep last loaded data */
       }
     };
 
-    void load();
+    void refresh();
+
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
 
     return () => {
       cancelled = true;
+      window.removeEventListener("focus", onFocus);
     };
-  }, [initialCategories, initialProducts]);
+  }, []);
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);

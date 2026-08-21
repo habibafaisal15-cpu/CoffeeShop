@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { PRODUCT_IMAGES } from "@/lib/data";
-import { resolveCustomerMediaUrl, isCustomUploadUrl } from "@/lib/media-url";
+import { resolveCustomerMediaUrl } from "@/lib/media-url";
 import { CategoryImage } from "@/components/customer/CategoryImage";
 import { formatPKR, useCartStore } from "@/lib/store";
 import {
@@ -333,51 +333,13 @@ export function MenuArea({
   );
 }
 
-const MENU_IMAGE_FALLBACKS: Record<string, string[]> = {
-  cappuccino: [
-    "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=600&q=80",
-    "https://picsum.photos/seed/cappuccino/600/750",
-  ],
-  "caramel-latte": [
-    "https://images.unsplash.com/photo-1571927075597-020fc2cf4036?auto=format&fit=crop&w=600&q=80",
-    "https://picsum.photos/seed/caramel/600/750",
-  ],
-  "iced-latte": [
-    "https://images.unsplash.com/photo-1517701603779-6ce934106591?auto=format&fit=crop&w=600&q=80",
-    "https://picsum.photos/seed/icedlatte/600/750",
-  ],
-  mocha: [
-    "https://images.unsplash.com/photo-1607958996333-41aef7caefaa?auto=format&fit=crop&w=600&q=80",
-    "https://picsum.photos/seed/mocha/600/750",
-  ],
-  croissant: [
-    "https://images.unsplash.com/photo-1555507036-ab794f4a5337?auto=format&fit=crop&w=600&q=80",
-    "https://picsum.photos/seed/croissant/600/750",
-  ],
-};
-
 function menuImageSources(product: Product): string[] {
-  const sources: string[] = [];
-
   if (product.image?.trim()) {
-    sources.push(resolveCustomerMediaUrl(product.image.trim()));
-  }
-
-  if (sources.length > 0 && isCustomUploadUrl(product.image)) {
-    return sources;
-  }
-
-  const fallbacks = MENU_IMAGE_FALLBACKS[product.id] ?? [];
-  for (const url of fallbacks) {
-    if (!sources.includes(url)) sources.push(url);
+    return [resolveCustomerMediaUrl(product.image.trim())];
   }
 
   const staticImage = PRODUCT_IMAGES[product.id];
-  if (staticImage && !sources.includes(staticImage)) {
-    sources.push(staticImage);
-  }
-
-  return sources;
+  return staticImage ? [staticImage] : [];
 }
 
 function CraftFeatureSection({ onExplore }: { onExplore?: () => void }) {

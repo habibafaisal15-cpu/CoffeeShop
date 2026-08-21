@@ -8,7 +8,7 @@ import { formatPKR } from "@/lib/store";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { AdminField, AdminCard } from "@/components/admin/AdminField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { adminGet } from "@/lib/admin-fetch";
+import { adminGet, adminMutate } from "@/lib/admin-fetch";
 import { resolveMediaUrl } from "@/lib/media-url";
 
 const emptyProduct: Omit<Product, "id"> = {
@@ -32,6 +32,7 @@ export default function AdminMenuPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const loadData = () => {
     setLoading(true);
@@ -109,15 +110,16 @@ export default function AdminMenuPage() {
 
     setSaving(true);
     setError("");
+    setSuccess("");
     try {
-      const res = await fetch("/api/products/manage", {
-        method: isNew ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isNew ? form : { ...form, id: editing!.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Save failed");
+      const payload = isNew ? form : { ...form, id: editing!.id };
+      await adminMutate(
+        "/api/products/manage",
+        isNew ? "POST" : "PUT",
+        payload
+      );
       closeForm();
+      setSuccess("Product saved. Customer site will update on refresh.");
       loadData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
@@ -128,17 +130,24 @@ export default function AdminMenuPage() {
 
   const deleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    await fetch(`/api/products/manage?id=${id}`, { method: "DELETE" });
-    loadData();
+    try {
+      await adminMutate(`/api/products/manage?id=${encodeURIComponent(id)}`, "DELETE");
+      loadData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+    }
   };
 
   const toggleAvailable = async (product: Product) => {
-    await fetch("/api/products/manage", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...product, available: !product.available }),
-    });
-    loadData();
+    try {
+      await adminMutate("/api/products/manage", "PUT", {
+        ...product,
+        available: !product.available,
+      });
+      loadData();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Update failed");
+    }
   };
 
   return (
@@ -164,6 +173,12 @@ export default function AdminMenuPage() {
           >
             Retry
           </button>
+        </div>
+      )}
+
+      {success && (
+        <div className="admin-card mb-6 border-green-200 bg-green-50 p-4 text-sm text-green-800">
+          {success}
         </div>
       )}
 
