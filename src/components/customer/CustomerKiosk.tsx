@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Category, NavCategory, Product, MenuCategory } from "@/lib/types";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
@@ -10,10 +10,6 @@ import { SceneBackground } from "@/components/customer/SceneBackground";
 import { HeroCoffeeDecor } from "@/components/customer/HeroCoffeeDecor";
 import { useCartStore } from "@/lib/store";
 import { IconBell } from "@/components/icons/BrewedIcons";
-import { getLinkedCustomerUrl } from "@/lib/site-mode";
-
-const PRODUCTION_CUSTOMER_URL =
-  getLinkedCustomerUrl() || "https://coffee-pos-coral.vercel.app";
 
 const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
   home: "all",
@@ -34,6 +30,7 @@ interface CustomerKioskProps {
 async function fetchKioskData(): Promise<{
   products: Product[];
   categories: MenuCategory[];
+  ok: boolean;
 }> {
   const bust = Date.now();
   const [productsRes, categoriesRes] = await Promise.all([
@@ -41,14 +38,13 @@ async function fetchKioskData(): Promise<{
     fetch(`/api/categories?_=${bust}`, { cache: "no-store" }),
   ]);
 
-  const [productsData, categoriesData] = await Promise.all([
-    productsRes.ok ? productsRes.json() : [],
-    categoriesRes.ok ? categoriesRes.json() : [],
-  ]);
+  const productsData = productsRes.ok ? await productsRes.json() : null;
+  const categoriesData = categoriesRes.ok ? await categoriesRes.json() : null;
 
   return {
     products: Array.isArray(productsData) ? productsData : [],
     categories: Array.isArray(categoriesData) ? categoriesData : [],
+    ok: productsRes.ok && categoriesRes.ok,
   };
 }
 
@@ -62,8 +58,40 @@ export function CustomerKiosk({
   );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [dataLoaded, setDataLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const data = await fetchKioskData();
+
+      setProducts((prev) => {
+        const nextProducts = data.products.length > 0 ? data.products : prev;
+        setCategories((prevCats) => {
+          const nextCategories =
+            data.categories.length > 0 ? data.categories : prevCats;
+          setLoadFailed(nextProducts.length === 0 && nextCategories.length === 0);
+          return nextCategories;
+        });
+        if (data.products.length > 0 || data.categories.length > 0) {
+          setRefreshKey((k) => k + 1);
+        }
+        return nextProducts;
+      });
+    } catch {
+      setProducts((prev) => {
+        setCategories((prevCats) => {
+          setLoadFailed(prev.length === 0 && prevCats.length === 0);
+          return prevCats;
+        });
+        return prev;
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     useCartStore.persist.rehydrate();
@@ -72,22 +100,6 @@ export function CustomerKiosk({
     if (!serviceType) {
       setShowServiceModal(true);
     }
-
-    let cancelled = false;
-
-    const refresh = async () => {
-      try {
-        const data = await fetchKioskData();
-        if (cancelled) return;
-        setProducts(data.products);
-        setCategories(data.categories);
-        setRefreshKey((k) => k + 1);
-      } catch {
-        /* keep last loaded data */
-      } finally {
-        if (!cancelled) setDataLoaded(true);
-      }
-    };
 
     void refresh();
 
@@ -101,10 +113,9 @@ export function CustomerKiosk({
     });
 
     return () => {
-      cancelled = true;
       window.removeEventListener("focus", onRefresh);
     };
-  }, []);
+  }, [refresh]);
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);
@@ -113,16 +124,22 @@ export function CustomerKiosk({
   };
 
   const showDbWarning =
-    dataLoaded && products.length === 0 && categories.length === 0;
+    loadFailed && products.length === 0 && categories.length === 0;
 
   return (
     <div className="relative min-h-screen">
       {showDbWarning && (
         <div className="relative z-50 border-b border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm text-amber-950">
-          Menu data could not load. Use the live site:{" "}
-          <a href={PRODUCTION_CUSTOMER_URL} className="font-semibold underline">
-            {PRODUCTION_CUSTOMER_URL.replace(/^https?:\/\//, "")}
-          </a>
+          Menu could not load. Check your connection or{" "}
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={refreshing}
+            className="font-semibold underline disabled:opacity-60"
+          >
+            {refreshing ? "Retrying…" : "try again"}
+          </button>
+          .
         </div>
       )}
       <SceneBackground />
