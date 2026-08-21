@@ -1,4 +1,5 @@
 import { MenuCategory, Order, OrderItem, Product } from "../types";
+import { resolveMediaUrl } from "../media-url";
 
 export type CategoryRow = {
   id: string;
@@ -38,7 +39,7 @@ export function mapCategory(row: CategoryRow): MenuCategory {
   return {
     id: row.id,
     label: row.label,
-    image: row.image,
+    image: resolveMediaUrl(row.image),
     sortOrder: row.sort_order,
     visible: row.visible,
     showInCarousel: row.show_in_carousel,
@@ -59,7 +60,7 @@ export function mapProduct(row: ProductRow): Product {
     description: row.description ?? "",
     price: toPrice(row.price),
     category: row.category ?? "coffee",
-    image: row.image ?? "",
+    image: resolveMediaUrl(row.image ?? ""),
     popular: row.popular ?? false,
     available: row.available ?? true,
   };

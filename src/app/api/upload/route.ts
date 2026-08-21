@@ -1,4 +1,3 @@
-import { existsSync, mkdirSync, writeFileSync } from "fs";
 import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth-session";
@@ -55,6 +54,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ url: supabaseUrl });
     }
 
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        {
+          error:
+            "Image storage is not configured. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to this Vercel project, then redeploy.",
+        },
+        { status: 503 }
+      );
+    }
+
+    const { existsSync, mkdirSync, writeFileSync } = await import("fs");
     const uploadsDir = getUploadsDir();
     if (!existsSync(uploadsDir)) {
       mkdirSync(uploadsDir, { recursive: true });

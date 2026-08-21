@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+function adminImageHost(): string | null {
+  const adminUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL?.trim() ||
+    process.env.ADMIN_PUBLIC_URL?.trim();
+  if (!adminUrl) return null;
+  try {
+    return new URL(adminUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const adminHost = adminImageHost();
+
 const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname),
   images: {
@@ -10,6 +24,9 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "picsum.photos" },
       { protocol: "https", hostname: "img.icons8.com" },
       { protocol: "https", hostname: "bgupvqeccxztvkfuvefl.supabase.co" },
+      ...(adminHost
+        ? [{ protocol: "https" as const, hostname: adminHost }]
+        : []),
     ],
   },
 };
