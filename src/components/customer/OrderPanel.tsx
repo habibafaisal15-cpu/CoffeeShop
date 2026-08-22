@@ -158,6 +158,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
     setShowServiceModal,
     addPoints,
     setServiceType,
+    addOrderToHistory,
   } = useCartStore();
 
   const [isPlacing, setIsPlacing] = useState(false);
@@ -167,6 +168,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
 
   const finalizeOrder = (order: Order) => {
     addPoints(order.pointsEarned);
+    addOrderToHistory(order.id);
     setPlacedOrder(order);
     clearCart();
   };

@@ -20,6 +20,7 @@ interface CartStore {
   placedOrder: Order | null;
   customer: CustomerProfile;
   searchQuery: string;
+  orderHistoryIds: string[];
 
   addItem: (productId: string) => void;
   removeItem: (productId: string) => void;
@@ -31,6 +32,7 @@ interface CartStore {
   setPlacedOrder: (order: Order | null) => void;
   setSearchQuery: (query: string) => void;
   addPoints: (points: number) => void;
+  addOrderToHistory: (orderId: string) => void;
 }
 
 export const useCartStore = create<CartStore>()(
@@ -43,6 +45,7 @@ export const useCartStore = create<CartStore>()(
       placedOrder: null,
       customer: DEFAULT_CUSTOMER,
       searchQuery: "",
+      orderHistoryIds: [],
 
       addItem: (productId) => {
         const items = get().items;
@@ -100,6 +103,12 @@ export const useCartStore = create<CartStore>()(
         const customer = get().customer;
         set({ customer: { ...customer, points: customer.points + points } });
       },
+
+      addOrderToHistory: (orderId) => {
+        const ids = get().orderHistoryIds;
+        if (ids.includes(orderId)) return;
+        set({ orderHistoryIds: [orderId, ...ids].slice(0, 50) });
+      },
     }),
     {
       name: "brewed-cart",
@@ -109,6 +118,7 @@ export const useCartStore = create<CartStore>()(
         customer: state.customer,
         serviceType: state.serviceType,
         placedOrder: state.placedOrder,
+        orderHistoryIds: state.orderHistoryIds,
       }),
     }
   )

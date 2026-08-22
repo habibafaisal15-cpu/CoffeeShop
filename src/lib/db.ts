@@ -202,6 +202,22 @@ export async function getOrderById(id: string): Promise<Order | null> {
   return row ? mapOrder(row) : null;
 }
 
+export async function getOrdersByIds(ids: string[]): Promise<Order[]> {
+  if (ids.length === 0) return [];
+  await ensureDb();
+  const uniqueIds = [...new Set(ids.map((id) => id.trim()).filter(Boolean))].slice(
+    0,
+    50
+  );
+  const sql = getSql();
+  const rows = await sql<OrderRow[]>`
+    SELECT * FROM orders
+    WHERE id IN ${sql(uniqueIds)}
+    ORDER BY created_at DESC
+  `;
+  return rows.map(mapOrder);
+}
+
 export async function addOrder(order: Order): Promise<Order> {
   await ensureDb();
   const sql = getSql();

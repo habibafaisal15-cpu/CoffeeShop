@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Category, NavCategory, Product, MenuCategory, CraftSlide } from "@/lib/types";
+import { NavCategory, Product, MenuCategory, CraftSlide } from "@/lib/types";
 import { DEFAULT_CRAFT_SLIDES } from "@/lib/craft-slides";
 import { Sidebar } from "@/components/customer/Sidebar";
 import { MenuArea } from "@/components/customer/MenuArea";
@@ -11,28 +11,6 @@ import { SceneBackground } from "@/components/customer/SceneBackground";
 import { HeroCoffeeDecor } from "@/components/customer/HeroCoffeeDecor";
 import { useCartStore } from "@/lib/store";
 import { IconBell } from "@/components/icons/BrewedIcons";
-
-const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
-  home: "all",
-  coffee: "coffee",
-  "hot-drinks": "hot-drinks",
-  "iced-drinks": "iced-coffee",
-  pastries: "pastries",
-  sandwiches: "sandwiches",
-  snacks: "snacks",
-  merchandise: "merchandise",
-};
-
-const CATEGORY_TO_NAV: Partial<Record<string, NavCategory>> = {
-  all: "home",
-  coffee: "coffee",
-  "hot-drinks": "hot-drinks",
-  "iced-coffee": "iced-drinks",
-  pastries: "pastries",
-  sandwiches: "sandwiches",
-  snacks: "snacks",
-  merchandise: "merchandise",
-};
 
 interface CustomerKioskProps {
   initialProducts?: Product[];
@@ -153,14 +131,14 @@ export function CustomerKiosk({
 
   const handleNavChange = (nav: NavCategory) => {
     setActiveNav(nav);
-    const cat = NAV_TO_CATEGORY[nav];
-    if (cat) setActiveCategory(cat);
+    if (nav === "home") {
+      setActiveCategory("all");
+    }
   };
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
-    const nav = CATEGORY_TO_NAV[cat];
-    if (nav) setActiveNav(nav);
+    setActiveNav("home");
   };
 
   const showDbWarning =
@@ -210,6 +188,7 @@ export function CustomerKiosk({
           products={products}
           categories={categories}
           craftSlides={craftSlides}
+          activeNav={activeNav}
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
         />

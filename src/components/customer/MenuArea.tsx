@@ -3,7 +3,7 @@
 import type { ComponentType } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { MenuCategory, Product, CraftSlide } from "@/lib/types";
+import { MenuCategory, NavCategory, Product, CraftSlide } from "@/lib/types";
 import { getCarouselCategories } from "@/lib/categories";
 import { DEFAULT_CRAFT_SLIDES } from "@/lib/craft-slides";
 import { PRODUCT_IMAGES } from "@/lib/data";
@@ -14,6 +14,12 @@ import {
   HomeFullMenu,
   SearchResults,
 } from "@/components/customer/CategoryBrowseView";
+import {
+  AboutUsPage,
+  ContactUsPage,
+  MyOrdersPage,
+  OurBranchesPage,
+} from "@/components/customer/CustomerPages";
 import { formatPKR, useCartStore } from "@/lib/store";
 import {
   IconCoffeeCup,
@@ -61,6 +67,7 @@ interface MenuAreaProps {
   products: Product[];
   categories: MenuCategory[];
   craftSlides?: CraftSlide[];
+  activeNav: NavCategory;
   activeCategory: string;
   onCategoryChange: (cat: string) => void;
 }
@@ -69,6 +76,7 @@ export function MenuArea({
   products,
   categories,
   craftSlides = DEFAULT_CRAFT_SLIDES,
+  activeNav,
   activeCategory,
   onCategoryChange,
 }: MenuAreaProps) {
@@ -80,7 +88,13 @@ export function MenuArea({
 
   useEffect(() => {
     setShowFullMenu(false);
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, activeNav]);
+
+  useEffect(() => {
+    if (activeNav === "menu") {
+      setShowFullMenu(true);
+    }
+  }, [activeNav]);
 
   useEffect(() => {
     if (activeCategory !== "all" || showFullMenu) {
@@ -113,10 +127,25 @@ export function MenuArea({
     return p.category === activeCategory;
   });
 
-  const isHomeView =
-    activeCategory === "all" && !searchQuery && !showFullMenu;
+  const isStaticPage =
+    activeNav === "my-orders" ||
+    activeNav === "about" ||
+    activeNav === "contact" ||
+    activeNav === "branches";
 
-  const showHomeHero = activeCategory === "all" && !searchQuery;
+  const isMenuNav = activeNav === "menu";
+
+  const isHomeView =
+    activeNav === "home" &&
+    activeCategory === "all" &&
+    !searchQuery &&
+    !showFullMenu;
+
+  const showHomeHero =
+    activeNav === "home" && activeCategory === "all" && !searchQuery;
+
+  const showCategoryPills =
+    !isStaticPage && !searchQuery && (activeNav === "home" || isMenuNav);
 
   const homePopularItems = products
     .filter((p) => p.available !== false && p.popular)
@@ -194,7 +223,7 @@ export function MenuArea({
       </div>
       )}
 
-      {!showHomeHero && (
+      {!showHomeHero && showCategoryPills && (
         <div className="relative z-20 mb-6 mt-4 px-1 sm:mt-6">
           <CategoryPillsRow
             carouselCategories={carouselCategories}
@@ -206,8 +235,32 @@ export function MenuArea({
         </div>
       )}
 
+      {isMenuNav && !searchQuery && (
+        <header className="category-fancy-header relative mb-6 mt-4 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#3E4A38] via-[#2A1E17] to-[#3E3027] p-6 shadow-[0_20px_48px_rgba(34,23,20,0.22)] sm:p-8">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#C99E92]">
+            Browse
+          </p>
+          <h1 className="mt-2 font-serif text-3xl leading-tight text-[#FAF7F2] sm:text-4xl">
+            Full Menu
+          </h1>
+          <p className="mt-2 max-w-xl font-serif text-sm italic leading-relaxed text-[#E8DCC8]/95 sm:text-base">
+            Everything we serve — coffees, bakes, snacks, and more.
+          </p>
+        </header>
+      )}
+
       <div ref={contentRef} className={`px-0.5 ${showHomeHero ? "mt-3" : "mt-0"}`}>
-      {searchQuery ? (
+      {isStaticPage ? (
+        activeNav === "my-orders" ? (
+          <MyOrdersPage />
+        ) : activeNav === "about" ? (
+          <AboutUsPage />
+        ) : activeNav === "contact" ? (
+          <ContactUsPage />
+        ) : (
+          <OurBranchesPage />
+        )
+      ) : searchQuery ? (
         <SearchResults
           query={searchQuery}
           products={categoryProducts}
@@ -248,7 +301,7 @@ export function MenuArea({
             onCategoryChange={handleCategorySelect}
           />
         </>
-      ) : activeCategory === "all" && showFullMenu ? (
+      ) : isMenuNav || (activeCategory === "all" && showFullMenu) ? (
         <>
           {displayPopular.length > 0 && (
             <section className="mb-8">

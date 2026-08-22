@@ -13,13 +13,11 @@ export type Category =
 
 export type NavCategory =
   | "home"
-  | "coffee"
-  | "hot-drinks"
-  | "iced-drinks"
-  | "pastries"
-  | "sandwiches"
-  | "snacks"
-  | "merchandise";
+  | "menu"
+  | "my-orders"
+  | "about"
+  | "contact"
+  | "branches";
 
 export type ServiceType = "pickup" | "delivery";
 
@@ -112,13 +110,11 @@ export const CATEGORY_LABELS: Record<Category, string> = {
 
 export const NAV_ITEMS: { id: NavCategory; label: string; icon: string }[] = [
   { id: "home", label: "Home", icon: "home" },
-  { id: "coffee", label: "Coffee", icon: "coffee" },
-  { id: "hot-drinks", label: "Hot Drinks", icon: "flame" },
-  { id: "iced-drinks", label: "Iced Drinks", icon: "snowflake" },
-  { id: "pastries", label: "Pastries", icon: "croissant" },
-  { id: "sandwiches", label: "Sandwiches", icon: "sandwich" },
-  { id: "snacks", label: "Snacks", icon: "cookie" },
-  { id: "merchandise", label: "Merchandise", icon: "bag" },
+  { id: "menu", label: "Menu", icon: "menu" },
+  { id: "my-orders", label: "My Orders", icon: "orders" },
+  { id: "about", label: "About Us", icon: "about" },
+  { id: "contact", label: "Contact Us", icon: "contact" },
+  { id: "branches", label: "Our Branches", icon: "branches" },
 ];
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {

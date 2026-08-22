@@ -29,6 +29,55 @@ export function IconHome(props: IconProps) {
   );
 }
 
+export function IconMenuBook(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H5V5Z" />
+      <path d="M19 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7V5Z" />
+    </Icon>
+  );
+}
+
+export function IconOrders(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 6h13" />
+      <path d="M8 12h13" />
+      <path d="M8 18h13" />
+      <path d="M3 6h.01" />
+      <path d="M3 12h.01" />
+      <path d="M3 18h.01" />
+    </Icon>
+  );
+}
+
+export function IconInfo(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 10v6" />
+      <path d="M12 7h.01" />
+    </Icon>
+  );
+}
+
+export function IconPhone(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M8 3h8l1 4-3 2a11 11 0 0 0 4 4l2-3 4 1v8a2 2 0 0 1-2 2C9.5 21 3 14.5 3 6a2 2 0 0 1 2-2Z" />
+    </Icon>
+  );
+}
+
+export function IconMapPin(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </Icon>
+  );
+}
+
 export function IconCoffeeCup(props: IconProps) {
   return (
     <Icon {...props}>
@@ -261,6 +310,11 @@ export function IconSparkle(props: IconProps) {
 
 export const NAV_ICON_MAP = {
   home: IconHome,
+  menu: IconMenuBook,
+  orders: IconOrders,
+  about: IconInfo,
+  contact: IconPhone,
+  branches: IconMapPin,
   coffee: IconCoffeeCup,
   flame: IconHotDrink,
   snowflake: IconIcedDrink,
