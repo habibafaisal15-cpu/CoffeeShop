@@ -15,14 +15,29 @@ export default async function HomePage() {
   let categories: MenuCategory[] | undefined;
   let craftSlides: CraftSlide[] | undefined;
 
-  try {
-    [products, categories, craftSlides] = await Promise.all([
+  const [productsResult, categoriesResult, craftSlidesResult] =
+    await Promise.allSettled([
       getProducts(),
       getCategories(),
       getCraftSlides(),
     ]);
-  } catch (error) {
-    console.error("Failed to load kiosk data:", error);
+
+  if (productsResult.status === "fulfilled") {
+    products = productsResult.value;
+  } else {
+    console.error("Failed to load products:", productsResult.reason);
+  }
+
+  if (categoriesResult.status === "fulfilled") {
+    categories = categoriesResult.value;
+  } else {
+    console.error("Failed to load categories:", categoriesResult.reason);
+  }
+
+  if (craftSlidesResult.status === "fulfilled") {
+    craftSlides = craftSlidesResult.value;
+  } else {
+    console.error("Failed to load craft slides:", craftSlidesResult.reason);
   }
 
   return (

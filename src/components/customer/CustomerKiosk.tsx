@@ -44,7 +44,6 @@ async function fetchKioskData(): Promise<{
   products: Product[];
   categories: MenuCategory[];
   craftSlides: CraftSlide[];
-  ok: boolean;
 }> {
   const bust = Date.now();
   const [productsRes, categoriesRes, slidesRes] = await Promise.all([
@@ -61,7 +60,6 @@ async function fetchKioskData(): Promise<{
     products: Array.isArray(productsData) ? productsData : [],
     categories: Array.isArray(categoriesData) ? categoriesData : [],
     craftSlides: Array.isArray(slidesData) ? slidesData : [],
-    ok: productsRes.ok && categoriesRes.ok && slidesRes.ok,
   };
 }
 
@@ -79,7 +77,11 @@ export function CustomerKiosk({
   );
   const [activeNav, setActiveNav] = useState<NavCategory>("home");
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(
+    () =>
+      (initialProducts?.length ?? 0) === 0 &&
+      (initialCategories?.length ?? 0) === 0
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -93,7 +95,12 @@ export function CustomerKiosk({
         setCategories((prevCats) => {
           const nextCategories =
             data.categories.length > 0 ? data.categories : prevCats;
-          setLoadFailed(nextProducts.length === 0 && nextCategories.length === 0);
+          setLoadFailed(
+            nextProducts.length === 0 &&
+              nextCategories.length === 0 &&
+              prev.length === 0 &&
+              prevCats.length === 0
+          );
           return nextCategories;
         });
         if (data.products.length > 0 || data.categories.length > 0) {
@@ -127,17 +134,20 @@ export function CustomerKiosk({
 
     void refresh();
 
-    const onRefresh = () => void refresh();
-    window.addEventListener("focus", onRefresh);
-    window.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") onRefresh();
-    });
+    const onFocus = () => void refresh();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("pageshow", (event) => {
-      if (event.persisted) onRefresh();
+      if (event.persisted) void refresh();
     });
 
     return () => {
-      window.removeEventListener("focus", onRefresh);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("visibilitychange", onVisibility);
     };
   }, [refresh]);
 
