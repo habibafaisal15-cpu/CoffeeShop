@@ -269,7 +269,7 @@ function CategoryFancyHeader({
   image?: string;
 }) {
   return (
-    <header className="category-fancy-header relative mb-6 overflow-hidden rounded-[32px] shadow-[0_20px_48px_rgba(34,23,20,0.22)]">
+    <header className="category-fancy-header relative mb-4 overflow-hidden rounded-[24px] shadow-[0_20px_48px_rgba(34,23,20,0.22)] sm:mb-6 sm:rounded-[32px]">
       {image ? (
         <div className="absolute inset-0">
           <CategoryImage src={resolveCustomerMediaUrl(image)} alt={label} />
@@ -279,11 +279,11 @@ function CategoryFancyHeader({
         <div className="absolute inset-0 bg-gradient-to-br from-[#3E4A38] via-[#2A1E17] to-[#3E3027]" />
       )}
 
-      <div className="relative z-10 flex min-h-[180px] flex-col justify-end p-6 sm:min-h-[200px] sm:p-8">
+      <div className="relative z-10 flex min-h-[150px] flex-col justify-end p-5 sm:min-h-[200px] sm:p-8">
         <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#C99E92]">
           Collection
         </p>
-        <h1 className="mt-2 font-serif text-3xl leading-tight text-[#FAF7F2] sm:text-4xl md:text-[2.6rem]">
+        <h1 className="mt-2 font-serif text-2xl leading-tight text-[#FAF7F2] sm:text-4xl md:text-[2.6rem]">
           {label}
         </h1>
         <p className="mt-2 max-w-xl font-serif text-sm italic leading-relaxed text-[#E8DCC8]/95 sm:text-base">

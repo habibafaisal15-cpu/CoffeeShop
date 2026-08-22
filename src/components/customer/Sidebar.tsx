@@ -3,6 +3,15 @@ import { NavCategory } from "@/lib/types";
 import { NAV_ITEMS } from "@/lib/types";
 import { IconCoffeeCup, IconQrScan, NAV_ICON_MAP } from "@/components/icons/BrewedIcons";
 
+const MOBILE_SHORT_LABELS: Partial<Record<NavCategory, string>> = {
+  home: "Home",
+  menu: "Menu",
+  "my-orders": "Orders",
+  about: "About",
+  contact: "Contact",
+  branches: "Branches",
+};
+
 interface SidebarProps {
   activeNav: NavCategory;
   onNavChange: (nav: NavCategory) => void;
@@ -30,21 +39,24 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
         </div>
       </div>
 
-      <nav className="sidebar-panel mx-2 flex shrink-0 gap-1 overflow-x-auto rounded-2xl px-2 py-2 shadow-glass scrollbar-hide xl:hidden">
+      <nav className="sidebar-panel mx-1 flex shrink-0 gap-0.5 overflow-x-auto rounded-2xl px-1.5 py-2 shadow-glass scrollbar-hide sm:mx-2 sm:gap-1 sm:px-2 xl:hidden">
         {NAV_ITEMS.map((item) => {
           const Icon = NAV_ICON_MAP[item.icon as keyof typeof NAV_ICON_MAP];
           const isActive = activeNav === item.id;
+          const shortLabel = MOBILE_SHORT_LABELS[item.id] ?? item.label;
           return (
             <button
               key={item.id}
               type="button"
               onClick={() => onNavChange(item.id)}
-              className={`flex shrink-0 flex-col items-center gap-1 rounded-xl px-3 py-2 transition ${
+              className={`flex min-w-[4.25rem] shrink-0 flex-col items-center gap-0.5 rounded-xl px-2 py-1.5 transition sm:min-w-0 sm:gap-1 sm:px-3 sm:py-2 ${
                 isActive ? "bg-[#9FB19A] text-[#3E2723]" : "text-[#3E2723]"
               }`}
             >
               <Icon size={18} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="max-w-[4.5rem] truncate text-[9px] font-medium sm:max-w-none sm:text-[10px]">
+                {shortLabel}
+              </span>
             </button>
           );
         })}

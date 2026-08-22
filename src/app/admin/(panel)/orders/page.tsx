@@ -189,7 +189,7 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   {isPending ? (
                     <button
                       onClick={() => updateStatus(order.id, "preparing")}
@@ -212,7 +212,7 @@ export default function AdminOrdersPage() {
                     order.status !== "completed" && (
                       <button
                         onClick={() => updateStatus(order.id, "cancelled")}
-                        className="rounded-xl border border-red-200 px-3 py-2 text-sm text-red-600 transition hover:bg-red-50"
+                        className="rounded-xl border border-red-200 px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50 sm:py-2"
                       >
                         Cancel
                       </button>

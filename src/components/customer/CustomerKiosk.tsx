@@ -181,7 +181,7 @@ export function CustomerKiosk({
         <IconBell size={20} />
       </button>
 
-      <div className="relative z-10 flex min-h-[calc(100vh-3.5rem)] flex-col gap-2 px-2 pb-4 xl:min-h-screen xl:flex-row xl:items-stretch xl:gap-0 xl:px-0 xl:py-4">
+      <div className="relative z-10 flex min-h-[calc(100vh-3.5rem)] flex-col gap-2 px-1 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-2 xl:min-h-screen xl:flex-row xl:items-stretch xl:gap-0 xl:px-0 xl:py-4 xl:pb-4">
         <Sidebar activeNav={activeNav} onNavChange={handleNavChange} />
         <MenuArea
           key={refreshKey}

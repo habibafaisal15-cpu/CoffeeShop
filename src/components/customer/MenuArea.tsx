@@ -161,7 +161,7 @@ export function MenuArea({
     hour < 12 ? "Good morning!" : hour < 17 ? "Good afternoon!" : "Good evening!";
 
   return (
-    <main className="menu-surface relative min-w-0 flex-1 overflow-x-visible px-2 py-2 xl:px-1">
+    <main className="menu-surface relative min-w-0 flex-1 overflow-x-hidden px-1 py-2 sm:px-2 xl:overflow-x-visible xl:px-1">
       {showHomeHero && (
       <div className="hero-panel relative mb-12 mt-4 w-full max-w-[calc(100%-1.25rem)] overflow-visible rounded-[40px] px-5 py-3 shadow-sm sm:max-w-[calc(100%-2rem)] sm:rounded-[44px] sm:px-6 sm:py-4 xl:mt-6 xl:max-w-[calc(100%-4rem)] xl:rounded-[48px]">
         <div className="relative z-10">
@@ -236,11 +236,11 @@ export function MenuArea({
       )}
 
       {isMenuNav && !searchQuery && (
-        <header className="category-fancy-header relative mb-6 mt-4 overflow-hidden rounded-[32px] bg-gradient-to-br from-[#3E4A38] via-[#2A1E17] to-[#3E3027] p-6 shadow-[0_20px_48px_rgba(34,23,20,0.22)] sm:p-8">
+        <header className="category-fancy-header relative mb-4 mt-3 overflow-hidden rounded-[24px] bg-gradient-to-br from-[#3E4A38] via-[#2A1E17] to-[#3E3027] p-5 shadow-[0_20px_48px_rgba(34,23,20,0.22)] sm:mb-6 sm:mt-4 sm:rounded-[32px] sm:p-8">
           <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#C99E92]">
             Browse
           </p>
-          <h1 className="mt-2 font-serif text-3xl leading-tight text-[#FAF7F2] sm:text-4xl">
+          <h1 className="mt-2 font-serif text-2xl leading-tight text-[#FAF7F2] sm:text-3xl lg:text-4xl">
             Full Menu
           </h1>
           <p className="mt-2 max-w-xl font-serif text-sm italic leading-relaxed text-[#E8DCC8]/95 sm:text-base">

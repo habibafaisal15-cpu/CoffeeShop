@@ -21,7 +21,7 @@ interface OrderPanelProps {
 }
 
 const CART_SHELL =
-  "glass-cart relative z-10 mx-2 flex h-[62vh] max-h-[62vh] w-full flex-col overflow-hidden rounded-t-[20px] p-4 text-[#2A1E17] sm:h-[68vh] sm:max-h-[68vh] sm:rounded-[20px] sm:p-5 xl:mx-3 xl:mb-8 xl:h-[calc(100vh-2rem)] xl:max-h-[calc(100vh-2rem)] xl:rounded-[20px] xl:p-5";
+  "glass-cart relative z-10 mx-1 flex h-[58vh] max-h-[58vh] w-full flex-col overflow-hidden rounded-t-[20px] p-3 text-[#2A1E17] sm:mx-2 sm:h-[62vh] sm:max-h-[62vh] sm:rounded-[20px] sm:p-4 md:h-[68vh] md:max-h-[68vh] md:p-5 xl:mx-3 xl:mb-8 xl:h-[calc(100vh-2rem)] xl:max-h-[calc(100vh-2rem)] xl:rounded-[20px] xl:p-5";
 
 function ServiceOptionPicker({
   serviceType,

@@ -100,7 +100,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard label="Today's Orders" value={todayOrders.length} icon={ShoppingBag} />
         <StatCard label="Revenue Today" value={formatPKR(revenue)} icon={TrendingUp} />
         <StatCard
@@ -168,7 +168,7 @@ function OrderRow({
   const ServiceIcon = order.serviceType === "delivery" ? Bike : Store;
 
   return (
-    <div className="flex items-center justify-between gap-2 rounded-xl border border-linen/40 bg-cream/60 px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-xl border border-linen/40 bg-cream/60 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:px-4">
       <div className="flex min-w-0 items-center gap-3">
         <ServiceIcon className="h-4 w-4 shrink-0 text-coffee-muted" />
         <div className="min-w-0">
@@ -178,8 +178,8 @@ function OrderRow({
           </p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <div className="text-right">
+      <div className="flex shrink-0 items-center justify-between gap-2 sm:justify-end">
+        <div className="text-left sm:text-right">
           <p className="text-sm font-semibold text-coffee">
             {formatPKR(order.total)}
           </p>

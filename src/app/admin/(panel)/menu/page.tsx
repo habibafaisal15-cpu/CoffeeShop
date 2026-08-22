@@ -273,12 +273,12 @@ export default function AdminMenuPage() {
 
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
               onClick={saveProduct}
               disabled={saving}
-              className="admin-btn-primary flex items-center gap-2 disabled:opacity-50"
+              className="admin-btn-primary flex items-center justify-center gap-2 disabled:opacity-50 sm:justify-start"
             >
               <Check className="h-4 w-4" />
               {saving ? "Saving…" : "Save Product"}
