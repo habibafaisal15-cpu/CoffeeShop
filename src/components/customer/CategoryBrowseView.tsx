@@ -1,41 +1,13 @@
 "use client";
 
-import type { ComponentType } from "react";
 import { useState } from "react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCategoryLabel } from "@/lib/categories";
 import { resolveCustomerMediaUrl } from "@/lib/media-url";
-import { CategoryImage } from "@/components/customer/CategoryImage";
 import { formatPKR } from "@/lib/store";
-import {
-  IconCoffeeCup,
-  IconHotDrink,
-  IconIcedDrink,
-  IconMerchandise,
-  IconPastry,
-  IconSandwich,
-  IconSnack,
-  IconSparkle,
-} from "@/components/icons/BrewedIcons";
+import { IconCoffeeCup } from "@/components/icons/BrewedIcons";
 
 const BAKE_CARD_COLORS = ["#8EB67D", "#E8C4BC", "#D5F1D1", "#C5D4BC", "#E2CFC4", "#D0E8CC"] as const;
-
-const CATEGORY_FALLBACK: Record<
-  string,
-  ComponentType<{ size?: number; className?: string }>
-> = {
-  all: IconCoffeeCup,
-  popular: IconSparkle,
-  coffee: IconCoffeeCup,
-  "hot-drinks": IconHotDrink,
-  "iced-coffee": IconIcedDrink,
-  "non-coffee": IconHotDrink,
-  specials: IconSparkle,
-  pastries: IconPastry,
-  sandwiches: IconSandwich,
-  snacks: IconSnack,
-  merchandise: IconMerchandise,
-};
 
 const CATEGORY_TAGLINES: Record<string, string> = {
   all: "Every cup, every bite — crafted with care.",
@@ -49,20 +21,6 @@ const CATEGORY_TAGLINES: Record<string, string> = {
   sandwiches: "Hearty bites for any time of day.",
   snacks: "Light treats to pair with your drink.",
   merchandise: "Take the Brewed experience home.",
-};
-
-const CATEGORY_ACCENTS: Record<string, string> = {
-  all: "#D8E8D4",
-  popular: "#EDE4D6",
-  coffee: "#E8D0C8",
-  "hot-drinks": "#E8D0C8",
-  "iced-coffee": "#DCE8EF",
-  "non-coffee": "#EDE4D6",
-  specials: "#F0E4D6",
-  pastries: "#EDE4D6",
-  sandwiches: "#E2D8CC",
-  snacks: "#E8E0D4",
-  merchandise: "#D8E0D4",
 };
 
 interface SearchResultsProps {
@@ -125,11 +83,8 @@ export function CategoryBrowseView({
   onAdd,
 }: CategoryBrowseViewProps) {
   const label = getCategoryLabel(categories, categoryId);
-  const meta = categories.find((c) => c.id === categoryId);
-  const FallbackIcon = CATEGORY_FALLBACK[categoryId] ?? IconCoffeeCup;
   const tagline =
     CATEGORY_TAGLINES[categoryId] ?? "Handpicked favorites from our kitchen.";
-  const accent = CATEGORY_ACCENTS[categoryId] ?? "#EDE4D6";
 
   const bestSellers = pickBestSellers(products, 6);
   const bestSellerIds = new Set(bestSellers.map((p) => p.id));
@@ -148,14 +103,20 @@ export function CategoryBrowseView({
 
   return (
     <div className="category-browse-in pb-6">
-      <CategoryPageHero
-        label={label}
-        tagline={tagline}
-        accent={accent}
-        image={meta?.image}
-        itemCount={products.length}
-        FallbackIcon={FallbackIcon}
-      />
+      <div className="mb-6">
+        <p className="menu-section-title text-[10px] font-semibold uppercase tracking-[0.28em] text-[#F2DABA]/80">
+          Collection
+        </p>
+        <h2 className="menu-section-title mt-1 font-serif text-2xl text-[#F2DABA] sm:text-3xl">
+          {label}
+        </h2>
+        <p className="menu-section-title mt-1 font-serif text-sm italic text-[#F2DABA]/75">
+          {tagline}
+        </p>
+        <p className="mt-2 text-xs text-[#F5EDE4]/65">
+          {products.length} {products.length === 1 ? "item" : "items"}
+        </p>
+      </div>
 
       <section className="mb-10">
         <SectionHeader
@@ -284,66 +245,6 @@ export function HomeFullMenu({ products, categories, onAdd }: HomeFullMenuProps)
         )}
       </div>
     </section>
-  );
-}
-
-function CategoryPageHero({
-  label,
-  tagline,
-  accent,
-  image,
-  itemCount,
-  FallbackIcon,
-}: {
-  label: string;
-  tagline: string;
-  accent: string;
-  image?: string;
-  itemCount: number;
-  FallbackIcon: ComponentType<{ size?: number; className?: string }>;
-}) {
-  return (
-    <div
-      className="category-page-hero relative mb-8 overflow-hidden rounded-[32px] shadow-[0_20px_50px_rgba(34,23,20,0.22)]"
-      style={{ backgroundColor: accent }}
-    >
-      {image ? (
-        <div className="absolute inset-0">
-          <CategoryImage
-            src={resolveCustomerMediaUrl(image)}
-            alt={label}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2A1E17]/88 via-[#2A1E17]/72 to-[#2A1E17]/45" />
-        </div>
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2A1E17]/90 to-[#3E3027]/80" />
-      )}
-
-      <div className="relative z-10 flex min-h-[168px] items-end justify-between gap-4 p-6 sm:min-h-[188px] sm:p-8">
-        <div className="max-w-lg">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#F2DABA]/80">
-            Collection
-          </p>
-          <h2 className="mt-2 font-serif text-3xl leading-tight text-[#FAF7F2] sm:text-4xl">
-            {label}
-          </h2>
-          <p className="mt-2 max-w-md font-serif text-sm italic leading-relaxed text-[#E8DCC8]/90 sm:text-base">
-            {tagline}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 flex-col items-end gap-3">
-          {!image && (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/15 backdrop-blur-sm">
-              <FallbackIcon size={28} className="text-[#FAF7F2]/90" />
-            </div>
-          )}
-          <span className="rounded-full border border-white/20 bg-black/25 px-3 py-1.5 text-[11px] font-medium text-[#FAF7F2] backdrop-blur-md">
-            {itemCount} {itemCount === 1 ? "item" : "items"}
-          </span>
-        </div>
-      </div>
-    </div>
   );
 }
 

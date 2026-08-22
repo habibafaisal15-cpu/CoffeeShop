@@ -116,6 +116,8 @@ export function MenuArea({
   const isHomeView =
     activeCategory === "all" && !searchQuery && !showFullMenu;
 
+  const showHomeHero = activeCategory === "all" && !searchQuery;
+
   const homePopularItems = products
     .filter((p) => p.available !== false && p.popular)
     .slice(0, 6);
@@ -131,6 +133,7 @@ export function MenuArea({
 
   return (
     <main className="menu-surface relative min-w-0 flex-1 overflow-x-visible px-2 py-2 xl:px-1">
+      {showHomeHero && (
       <div className="hero-panel relative mb-12 mt-4 w-full max-w-[calc(100%-1.25rem)] overflow-visible rounded-[40px] px-5 py-3 shadow-sm sm:max-w-[calc(100%-2rem)] sm:rounded-[44px] sm:px-6 sm:py-4 xl:mt-6 xl:max-w-[calc(100%-4rem)] xl:rounded-[48px]">
         <div className="relative z-10">
         <div className="absolute right-4 top-0 z-20 flex items-center gap-2 rounded-2xl border border-[#DFCFC0] bg-[#DDD0C2]/95 px-3 py-2 text-xs font-medium shadow-sm backdrop-blur-sm sm:px-4">
@@ -178,75 +181,32 @@ export function MenuArea({
         </div>
         </div>
 
-        {/* Category pills — directly under search; half on box, half on sage bg */}
+        {/* Category pills — half on box, half on sage bg (home only) */}
         <div className="relative z-20 mt-3 -mb-10 px-1">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => scrollCategories("left")}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/70 text-[#6E5D4F] shadow-sm backdrop-blur-sm"
-              aria-label="Scroll categories left"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-
-            <div className="flex min-w-0 flex-1 justify-center overflow-hidden">
-              <div
-                ref={scrollRef}
-                className="flex max-w-full justify-center gap-2.5 overflow-x-auto scrollbar-hide py-1"
-              >
-              {carouselCategories.map((cat) => {
-                const isActive = activeCategory === cat.id;
-                const FallbackIcon = CATEGORY_FALLBACK[cat.id] ?? IconCoffeeCup;
-
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleCategorySelect(cat.id)}
-                    className={`category-pill flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-[24px] px-1.5 py-2 shadow-sm ${
-                      isActive
-                        ? "bg-[#C99E92] text-white"
-                        : CATEGORY_PILL_BG[cat.id] ?? "bg-[#F5EDE3] text-[#2A1E17]"
-                    }`}
-                  >
-                    <div className="category-pill-icon relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
-                      {cat.image ? (
-                        <CategoryImage
-                          src={resolveCustomerMediaUrl(cat.image)}
-                          alt={cat.label}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <FallbackIcon
-                            size={20}
-                            className={isActive ? "text-white" : "text-[#6E5D4F]"}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-medium leading-tight">
-                      {cat.label}
-                    </span>
-                  </button>
-                );
-              })}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => scrollCategories("right")}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/70 text-[#6E5D4F] shadow-sm backdrop-blur-sm"
-              aria-label="Scroll categories right"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+          <CategoryPillsRow
+            carouselCategories={carouselCategories}
+            activeCategory={activeCategory}
+            scrollRef={scrollRef}
+            onScroll={scrollCategories}
+            onSelect={handleCategorySelect}
+          />
         </div>
       </div>
+      )}
 
-      <div ref={contentRef} className="mt-3 px-0.5">
+      {!showHomeHero && (
+        <div className="relative z-20 mb-6 mt-4 px-1 sm:mt-6">
+          <CategoryPillsRow
+            carouselCategories={carouselCategories}
+            activeCategory={activeCategory}
+            scrollRef={scrollRef}
+            onScroll={scrollCategories}
+            onSelect={handleCategorySelect}
+          />
+        </div>
+      )}
+
+      <div ref={contentRef} className={`px-0.5 ${showHomeHero ? "mt-3" : "mt-0"}`}>
       {searchQuery ? (
         <SearchResults
           query={searchQuery}
@@ -337,6 +297,86 @@ function menuImageSources(product: Product): string[] {
 
   const staticImage = PRODUCT_IMAGES[product.id];
   return staticImage ? [staticImage] : [];
+}
+
+function CategoryPillsRow({
+  carouselCategories,
+  activeCategory,
+  scrollRef,
+  onScroll,
+  onSelect,
+}: {
+  carouselCategories: MenuCategory[];
+  activeCategory: string;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  onScroll: (direction: "left" | "right") => void;
+  onSelect: (catId: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onScroll("left")}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/70 text-[#6E5D4F] shadow-sm backdrop-blur-sm"
+        aria-label="Scroll categories left"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
+      <div className="flex min-w-0 flex-1 justify-center overflow-hidden">
+        <div
+          ref={scrollRef}
+          className="flex max-w-full justify-center gap-2.5 overflow-x-auto scrollbar-hide py-1"
+        >
+          {carouselCategories.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            const FallbackIcon = CATEGORY_FALLBACK[cat.id] ?? IconCoffeeCup;
+
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => onSelect(cat.id)}
+                className={`category-pill flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-[24px] px-1.5 py-2 shadow-sm ${
+                  isActive
+                    ? "bg-[#C99E92] text-white"
+                    : CATEGORY_PILL_BG[cat.id] ?? "bg-[#F5EDE3] text-[#2A1E17]"
+                }`}
+              >
+                <div className="category-pill-icon relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[#F5F0E8] shadow-[inset_0_1px_2px_rgba(62,48,39,0.06)]">
+                  {cat.image ? (
+                    <CategoryImage
+                      src={resolveCustomerMediaUrl(cat.image)}
+                      alt={cat.label}
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <FallbackIcon
+                        size={20}
+                        className={isActive ? "text-white" : "text-[#6E5D4F]"}
+                      />
+                    </div>
+                  )}
+                </div>
+                <span className="text-[10px] font-medium leading-tight">
+                  {cat.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onScroll("right")}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/60 bg-white/70 text-[#6E5D4F] shadow-sm backdrop-blur-sm"
+        aria-label="Scroll categories right"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
 }
 
 function CraftFeatureSection({
