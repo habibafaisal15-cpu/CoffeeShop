@@ -9,6 +9,11 @@ import { DEFAULT_CRAFT_SLIDES } from "@/lib/craft-slides";
 import { PRODUCT_IMAGES } from "@/lib/data";
 import { resolveCustomerMediaUrl } from "@/lib/media-url";
 import { CategoryImage } from "@/components/customer/CategoryImage";
+import {
+  CategoryBrowseView,
+  HomeFullMenu,
+  SearchResults,
+} from "@/components/customer/CategoryBrowseView";
 import { formatPKR, useCartStore } from "@/lib/store";
 import {
   IconCoffeeCup,
@@ -68,8 +73,24 @@ export function MenuArea({
   onCategoryChange,
 }: MenuAreaProps) {
   const { searchQuery, setSearchQuery, addItem, customer } = useCartStore();
+  const [showFullMenu, setShowFullMenu] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setShowFullMenu(false);
+  }, [activeCategory, searchQuery]);
+
+  useEffect(() => {
+    if (activeCategory !== "all" || showFullMenu) {
+      contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [activeCategory, showFullMenu]);
+
+  const handleCategorySelect = (catId: string) => {
+    onCategoryChange(catId);
+  };
 
   const scrollCategories = (direction: "left" | "right") => {
     scrollRef.current?.scrollBy({
@@ -80,7 +101,7 @@ export function MenuArea({
 
   const carouselCategories = getCarouselCategories(categories);
 
-  const filtered = products.filter((p) => {
+  const categoryProducts = products.filter((p) => {
     if (p.available === false) return false;
     const matchesSearch =
       !searchQuery ||
@@ -92,46 +113,17 @@ export function MenuArea({
     return p.category === activeCategory;
   });
 
-  const popularPicks =
-    activeCategory === "all"
-      ? products.filter((p) => p.available !== false && p.popular)
-      : filtered.filter((p) => p.popular);
+  const isHomeView =
+    activeCategory === "all" && !searchQuery && !showFullMenu;
 
-  const isHomeView = activeCategory === "all" && !searchQuery;
-  const homePopularItems = (popularPicks.length ? popularPicks : filtered.slice(0, 6)).slice(
-    0,
-    6
-  );
+  const homePopularItems = products
+    .filter((p) => p.available !== false && p.popular)
+    .slice(0, 6);
 
-  const sweetTreats = filtered.filter(
-    (p) => p.category === "pastries" || p.category === "snacks"
-  );
-  const otherItems = filtered.filter(
-    (p) => !popularPicks.includes(p) && !sweetTreats.includes(p)
-  );
-
-  const sections = [
-    {
-      title: "Popular Picks",
-      icon: true,
-      viewAll: true,
-      items: popularPicks.length ? popularPicks : filtered.slice(0, 5),
-    },
-    {
-      title: "Sweet Treats",
-      icon: true,
-      viewAll: false,
-      items: sweetTreats.length ? sweetTreats : [],
-    },
-    {
-      title: "More to Explore",
-      icon: false,
-      viewAll: false,
-      items: otherItems,
-    },
-  ].filter((s) => s.items.length > 0);
-
-  const catalogSections = isHomeView ? [] : sections;
+  const displayPopular =
+    homePopularItems.length > 0
+      ? homePopularItems
+      : products.filter((p) => p.available !== false).slice(0, 6);
 
   const hour = new Date().getHours();
   const greeting =
@@ -211,7 +203,7 @@ export function MenuArea({
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => onCategoryChange(cat.id)}
+                    onClick={() => handleCategorySelect(cat.id)}
                     className={`category-pill flex h-20 w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-[24px] px-1.5 py-2 shadow-sm ${
                       isActive
                         ? "bg-[#C99E92] text-white"
@@ -254,10 +246,16 @@ export function MenuArea({
         </div>
       </div>
 
-      <div className="mt-3 px-0.5">
-      {isHomeView ? (
+      <div ref={contentRef} className="mt-3 px-0.5">
+      {searchQuery ? (
+        <SearchResults
+          query={searchQuery}
+          products={categoryProducts}
+          onAdd={addItem}
+        />
+      ) : isHomeView ? (
         <>
-          {homePopularItems.length > 0 && (
+          {displayPopular.length > 0 && (
             <section className="mb-8">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
@@ -265,7 +263,7 @@ export function MenuArea({
                 </h2>
                 <button
                   type="button"
-                  onClick={() => onCategoryChange("popular")}
+                  onClick={() => setShowFullMenu(true)}
                   className="menu-section-title text-xs font-semibold text-[#F2DABA]/90 transition hover:text-[#FAE8D0]"
                 >
                   View all →
@@ -273,7 +271,7 @@ export function MenuArea({
               </div>
 
               <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
-                {homePopularItems.map((product, index) => (
+                {displayPopular.map((product, index) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -287,45 +285,45 @@ export function MenuArea({
 
           <CraftFeatureSection
             slides={craftSlides}
-            onCategoryChange={onCategoryChange}
+            onCategoryChange={handleCategorySelect}
+          />
+        </>
+      ) : activeCategory === "all" && showFullMenu ? (
+        <>
+          {displayPopular.length > 0 && (
+            <section className="mb-8">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
+                  Popular Picks
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
+                {displayPopular.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    color={BAKE_CARD_COLORS[index % BAKE_CARD_COLORS.length]}
+                    onAdd={() => addItem(product.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+          <HomeFullMenu
+            products={products.filter((p) => p.available !== false)}
+            categories={categories}
+            onAdd={addItem}
           />
         </>
       ) : (
-        catalogSections.map((section) => (
-          <section key={section.title} className="mb-8 last:mb-2">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="menu-section-title font-sans text-sm font-bold uppercase tracking-[0.14em] text-[#F2DABA]">
-                {section.title}
-              </h2>
-              {section.viewAll && (
-                <button
-                  type="button"
-                  onClick={() => onCategoryChange("popular")}
-                  className="menu-section-title text-xs font-semibold text-[#F2DABA]/90 transition hover:text-[#FAE8D0]"
-                >
-                  View all →
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-9 md:gap-x-5">
-              {section.items.map((product, index) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  color={BAKE_CARD_COLORS[index % BAKE_CARD_COLORS.length]}
-                  onAdd={() => addItem(product.id)}
-                />
-              ))}
-            </div>
-          </section>
-        ))
-      )}
-
-      {!isHomeView && filtered.length === 0 && (
-        <div className="py-12 text-center text-sm text-[#F5EDE4]/80">
-          No items found. Try a different search or category.
-        </div>
+        <CategoryBrowseView
+          categoryId={activeCategory}
+          categories={categories}
+          products={categoryProducts}
+          showFullMenu={showFullMenu}
+          onViewAll={() => setShowFullMenu(true)}
+          onAdd={addItem}
+        />
       )}
       </div>
     </main>

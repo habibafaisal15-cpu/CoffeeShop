@@ -23,6 +23,17 @@ const NAV_TO_CATEGORY: Partial<Record<NavCategory, Category>> = {
   merchandise: "merchandise",
 };
 
+const CATEGORY_TO_NAV: Partial<Record<string, NavCategory>> = {
+  all: "home",
+  coffee: "coffee",
+  "hot-drinks": "hot-drinks",
+  "iced-coffee": "iced-drinks",
+  pastries: "pastries",
+  sandwiches: "sandwiches",
+  snacks: "snacks",
+  merchandise: "merchandise",
+};
+
 interface CustomerKioskProps {
   initialProducts?: Product[];
   initialCategories?: MenuCategory[];
@@ -136,6 +147,12 @@ export function CustomerKiosk({
     if (cat) setActiveCategory(cat);
   };
 
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    const nav = CATEGORY_TO_NAV[cat];
+    if (nav) setActiveNav(nav);
+  };
+
   const showDbWarning =
     loadFailed && products.length === 0 && categories.length === 0;
 
@@ -184,7 +201,7 @@ export function CustomerKiosk({
           categories={categories}
           craftSlides={craftSlides}
           activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
+          onCategoryChange={handleCategoryChange}
         />
         <HeroCoffeeDecor />
         <div className="relative z-10 flex w-full shrink-0 flex-col xl:w-[20%] xl:min-w-[14rem] xl:max-w-[18.5rem]">
