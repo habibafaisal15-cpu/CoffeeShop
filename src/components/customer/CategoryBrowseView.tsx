@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Leaf, Sparkles } from "lucide-react";
 import { MenuCategory, Product } from "@/lib/types";
 import { getCategoryLabel } from "@/lib/categories";
+import { getCategoryStory } from "@/lib/category-stories";
 import { resolveCustomerMediaUrl } from "@/lib/media-url";
+import { CategoryImage } from "@/components/customer/CategoryImage";
 import { formatPKR } from "@/lib/store";
 import { IconCoffeeCup } from "@/components/icons/BrewedIcons";
 
@@ -85,6 +88,8 @@ export function CategoryBrowseView({
   const label = getCategoryLabel(categories, categoryId);
   const tagline =
     CATEGORY_TAGLINES[categoryId] ?? "Handpicked favorites from our kitchen.";
+  const meta = categories.find((c) => c.id === categoryId);
+  const story = getCategoryStory(categoryId);
 
   const bestSellers = pickBestSellers(products, 6);
   const bestSellerIds = new Set(bestSellers.map((p) => p.id));
@@ -103,19 +108,23 @@ export function CategoryBrowseView({
 
   return (
     <div className="category-browse-in pb-6">
-      <div className="mb-6">
-        <p className="menu-section-title text-[10px] font-semibold uppercase tracking-[0.28em] text-[#F2DABA]/80">
-          Collection
-        </p>
-        <h2 className="menu-section-title mt-1 font-serif text-2xl text-[#F2DABA] sm:text-3xl">
-          {label}
-        </h2>
-        <p className="menu-section-title mt-1 font-serif text-sm italic text-[#F2DABA]/75">
-          {tagline}
-        </p>
-        <p className="mt-2 text-xs text-[#F5EDE4]/65">
-          {products.length} {products.length === 1 ? "item" : "items"}
-        </p>
+      <CategoryFancyHeader
+        label={label}
+        tagline={tagline}
+        itemCount={products.length}
+        image={meta?.image}
+      />
+
+      <div className="mb-8 grid gap-4 xl:grid-cols-2">
+        <CategoryStoryCard
+          title="How We Make It"
+          icon={<Leaf className="h-4 w-4" />}
+          body={story.howWeMake}
+        />
+        <CategoryTasteCard
+          headline={story.tasteHeadline}
+          taste={story.taste}
+        />
       </div>
 
       <section className="mb-10">
@@ -245,6 +254,121 @@ export function HomeFullMenu({ products, categories, onAdd }: HomeFullMenuProps)
         )}
       </div>
     </section>
+  );
+}
+
+function CategoryFancyHeader({
+  label,
+  tagline,
+  itemCount,
+  image,
+}: {
+  label: string;
+  tagline: string;
+  itemCount: number;
+  image?: string;
+}) {
+  return (
+    <header className="category-fancy-header relative mb-6 overflow-hidden rounded-[32px] shadow-[0_20px_48px_rgba(34,23,20,0.22)]">
+      {image ? (
+        <div className="absolute inset-0">
+          <CategoryImage src={resolveCustomerMediaUrl(image)} alt={label} />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#2A1E17]/92 via-[#2A1E17]/78 to-[#3E3027]/55" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#3E4A38] via-[#2A1E17] to-[#3E3027]" />
+      )}
+
+      <div className="relative z-10 flex min-h-[180px] flex-col justify-end p-6 sm:min-h-[200px] sm:p-8">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-[#C99E92]">
+          Collection
+        </p>
+        <h1 className="mt-2 font-serif text-3xl leading-tight text-[#FAF7F2] sm:text-4xl md:text-[2.6rem]">
+          {label}
+        </h1>
+        <p className="mt-2 max-w-xl font-serif text-sm italic leading-relaxed text-[#E8DCC8]/95 sm:text-base">
+          {tagline}
+        </p>
+        <span className="mt-4 inline-flex w-fit rounded-full border border-white/20 bg-black/25 px-3 py-1.5 text-[11px] font-medium text-[#FAF7F2] backdrop-blur-md">
+          {itemCount} {itemCount === 1 ? "item" : "items"} in this collection
+        </span>
+      </div>
+    </header>
+  );
+}
+
+function CategoryStoryCard({
+  title,
+  icon,
+  body,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  body: string;
+}) {
+  return (
+    <div className="category-story-panel p-5 sm:p-6">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDE4D6] text-[#5C4A3D]">
+          {icon}
+        </span>
+        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[#3E2723]">
+          {title}
+        </h3>
+      </div>
+      <p className="font-serif text-sm leading-relaxed text-[#5C4A3D] sm:text-[15px]">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function CategoryTasteCard({
+  headline,
+  taste,
+}: {
+  headline: string;
+  taste: {
+    aroma: string;
+    body: string;
+    flavor: string;
+    finish: string;
+  };
+}) {
+  const notes = [
+    { label: "Aroma", text: taste.aroma, icon: "☁" },
+    { label: "Body", text: taste.body, icon: "◉" },
+    { label: "Flavor", text: taste.flavor, icon: "✦" },
+    { label: "Finish", text: taste.finish, icon: "◎" },
+  ];
+
+  return (
+    <div className="category-story-panel p-5 sm:p-6">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EDE4D6] text-[#5C4A3D]">
+          <Sparkles className="h-4 w-4" />
+        </span>
+        <h3 className="font-sans text-xs font-bold uppercase tracking-[0.18em] text-[#3E2723]">
+          How It Tastes
+        </h3>
+      </div>
+      <p className="mb-4 font-serif text-xl italic leading-snug text-[#3E2723] sm:text-2xl">
+        {headline}
+      </p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {notes.map((note) => (
+          <div key={note.label} className="rounded-2xl bg-white/45 px-3 py-2.5">
+            <span className="text-base text-[#8B7355]">{note.icon}</span>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-[#3E2723]">
+              {note.label}
+            </p>
+            <p className="mt-0.5 text-[10px] leading-snug text-[#6E5D4F]">
+              {note.text}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
