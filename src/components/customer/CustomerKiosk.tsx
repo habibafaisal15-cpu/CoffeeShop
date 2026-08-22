@@ -203,7 +203,7 @@ export function CustomerKiosk({
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
         />
-        {activeCategory === "all" ? null : <HeroCoffeeDecor />}
+        <HeroCoffeeDecor />
         <div className="relative z-10 flex w-full shrink-0 flex-col xl:w-[20%] xl:min-w-[14rem] xl:max-w-[18.5rem]">
           <div className="xl:sticky xl:top-4 xl:mt-[calc(19rem-1.75in)] xl:self-start">
             <OrderPanel products={products} />
