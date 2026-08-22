@@ -12,12 +12,14 @@ import {
   LogOut,
   ExternalLink,
   Images,
+  Monitor,
 } from "lucide-react";
 
 const CUSTOMER_URL = process.env.NEXT_PUBLIC_CUSTOMER_URL?.trim() || "";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/pos", label: "POS", icon: Monitor },
   { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/menu", label: "Menu", icon: UtensilsCrossed },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },

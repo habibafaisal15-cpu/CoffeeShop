@@ -249,6 +249,36 @@
   .admin-btn-secondary {
     @apply rounded-xl border border-linen bg-cream/90 px-4 py-2 text-sm font-medium text-coffee transition hover:bg-cream;
   }
+
+  .pos-print-only {
+    display: none;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #pos-print-area,
+  #pos-print-area * {
+    visibility: visible !important;
+  }
+
+  #pos-print-area {
+    display: block !important;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    max-width: 80mm;
+    padding: 8mm 6mm;
+    background: white !important;
+  }
+
+  .pos-receipt {
+    width: 100%;
+  }
 }
 
 @layer utilities {
