@@ -18,6 +18,7 @@ import {
 
 interface OrderPanelProps {
   products: Product[];
+  onTrackOrder?: () => void;
 }
 
 const CART_SHELL =
@@ -147,7 +148,7 @@ function TrackMyOrderButton({
   );
 }
 
-export function OrderPanel({ products }: OrderPanelProps) {
+export function OrderPanel({ products, onTrackOrder }: OrderPanelProps) {
   const {
     items,
     updateQuantity,
@@ -159,6 +160,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
     addPoints,
     setServiceType,
     addOrderToHistory,
+    orderHistoryIds,
   } = useCartStore();
 
   const [isPlacing, setIsPlacing] = useState(false);
@@ -224,6 +226,11 @@ export function OrderPanel({ products }: OrderPanelProps) {
     setPlacedOrder(null);
   };
 
+  const handleTrackOrder = () => {
+    setPlacedOrder(null);
+    onTrackOrder?.();
+  };
+
   const panelHeader = (count: number, showClear: boolean) => (
     <div className="mb-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -280,7 +287,7 @@ export function OrderPanel({ products }: OrderPanelProps) {
         </div>
 
         <div className="mt-4 shrink-0 space-y-2">
-          <TrackMyOrderButton />
+          <TrackMyOrderButton onClick={handleTrackOrder} />
           <button
             onClick={handleNewOrder}
             className="w-full rounded-full border border-white/45 py-2 text-sm font-medium text-[#2A1E17] transition hover:bg-white/25"
@@ -386,7 +393,11 @@ export function OrderPanel({ products }: OrderPanelProps) {
       )}
 
       {items.length === 0 && (
-        <TrackMyOrderButton disabled className="mt-4 shrink-0 opacity-40" />
+        <TrackMyOrderButton
+          onClick={handleTrackOrder}
+          disabled={orderHistoryIds.length === 0}
+          className={`mt-4 shrink-0 ${orderHistoryIds.length === 0 ? "opacity-40" : ""}`}
+        />
       )}
 
       <button className="btn-chat absolute bottom-5 right-5 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-float xl:bottom-6 xl:right-6">
